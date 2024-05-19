@@ -1,0 +1,41 @@
+/** @module Express - Библиотека express */
+import express from 'express'
+
+/** @module Cors - Кросс доменные запросы */
+import cors from 'cors'
+
+/** @module Env - Кросс доменные запросы */
+import 'dotenv/config'
+
+/** @module Logger - Логирование приложения */
+import logger from './src/logger/logger.js'
+
+/** @module Database - База данных */
+import { connectionDatabase } from './src/db/database.js'
+
+import UserRouter from './src/router/UserRouter.js'
+import AuthRouter from './src/router/AuthRouter.js'
+import PurposeRouter from './src/router/PurposeRouter.js'
+import BankAccountRouter from './src/router/BankAccountRouter.js'
+import CategoryRouter from "./src/router/CategoryRouter.js";
+
+const app = express()
+
+const port = 3000
+
+app.use(cors())
+app.use(express.json())
+
+app.use('/', AuthRouter)
+app.use('/api', UserRouter)
+app.use('/api', PurposeRouter)
+app.use('/api', BankAccountRouter)
+app.use('/api', CategoryRouter)
+
+connectionDatabase()
+	.then(() => {
+		app.listen(port, () => {
+			logger.info(`The application is running on port ${port} and connected to the database`)
+		})
+	})
+	.catch((e) => logger.error(e))

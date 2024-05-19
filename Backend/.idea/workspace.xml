@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="72257dbf-fe9d-41ee-903c-c84e61841c64" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/Diploma.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/php.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/prettier.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/.editorconfig" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/.eslintrc.cjs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/.prettierrc.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/jsconfig.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/public/favicon.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/App.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/assets/base.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/assets/logo.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/assets/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/auth/LoginForm.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/auth/RegisterForm.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/card/BankAccountCard.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/components/BankAccount.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/components/history/HistoryList.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/components/history/HistoryListItem.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/enums/enumCurrency.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/bank-accounts/service/BankAccountsService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/card/category/CategoryCard.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/card/category/model/CategoryModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/card/transaction/TransactionCard.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/card/transaction/model/TransactionModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/enums/enumCategories.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/list/CategoriesList.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/service/CategoryService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/categories/service/TransactionService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/icons/IconCommunity.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/icons/IconDocumentation.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/icons/IconEcosystem.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/icons/IconSupport.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/icons/IconTooling.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/pages/PageAuth.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/pages/PageBankAccounts.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/pages/PageCategories.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/pages/PagePurposes.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/purposes/card/PurposeModal.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/purposes/card/PurposeModel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/purposes/data/PurposeData.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/purposes/service/PurposeService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/PageHeader.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemColorPicker.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemHeader.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemInput.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemInputNumber.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemLabel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemModal.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemSelect.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/components/system/SystemTabs.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/layouts/MainLayout.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/main.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/router/profile/profile.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/router/router.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/services/AuthService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/services/UserService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/stores/user.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/src/utils/http.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Frontend/vite.config.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="5" />
+  </component>
+  <component name="ProjectId" id="2gYnBxCo7PMnJzjiRmCqG2NaAlt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="72257dbf-fe9d-41ee-903c-c84e61841c64" name="Changes" comment="" />
+      <created>1715883246642</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1715883246642</updated>
+      <workItem from="1715883247703" duration="5120000" />
+      <workItem from="1715929796275" duration="5000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
