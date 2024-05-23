@@ -5,6 +5,7 @@
 
     <!-- Поле ввода -->
     <el-input
+      :class="{ input_required: required && !modelValue.length }"
       :disabled="disabled"
       :model-value="modelValue"
       :placeholder="placeholder"
@@ -37,6 +38,12 @@ export default {
     label: {
       type: String,
       default: ''
+    },
+
+    /** @param {boolean} required - Обязательно ли поле к заполнению */
+    required: {
+      type: Boolean,
+      default: false
     },
 
     /** @param {boolean} disabled - Заблокировано ли взаимодействие с полем */
@@ -77,13 +84,19 @@ export default {
 
 <style scoped lang="scss">
 .input {
+  :deep(.el-input__wrapper) {
+    transition: all 0.25s ease-in-out;
+  }
+
   &__label {
     margin-bottom: 4px;
     color: var(--el-text-color-placeholder);
   }
 
-  //:deep(.el-input__wrapper) {
-  //  background: var(--el-color-danger-light-7);
-  //}
+  &_required {
+    :deep(.el-input__wrapper) {
+      background: var(--el-color-danger-light-7);
+    }
+  }
 }
 </style>

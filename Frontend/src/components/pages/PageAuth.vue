@@ -107,6 +107,7 @@ export default {
     height: fit-content;
     background: white;
     padding: 10px;
+    border: 1px solid var(--el-menu-border-color);
     border-radius: var(--main-border-radius);
   }
 

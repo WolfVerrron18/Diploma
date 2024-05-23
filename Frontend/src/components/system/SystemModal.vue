@@ -8,7 +8,6 @@
     :align-center="true"
     :show-close="false"
     :z-index="zIndex"
-    :fullscreen="isFullScreen"
     @closed="onHideModal"
     @update:model-value="onUpdateVisible"
   >
@@ -20,16 +19,6 @@
 
         <!-- Контролы -->
         <div class="modal__controls">
-          <!-- Иконка полноэкранного режима -->
-          <el-icon v-if="!isFullScreen" color="#000000" class="modal__icon">
-            <FullScreen @click="isFullScreen = true" />
-          </el-icon>
-
-          <!-- Иконка картинка в картинке -->
-          <el-icon v-else color="#000000" class="modal__icon">
-            <CopyDocument @click="isFullScreen = false" />
-          </el-icon>
-
           <el-icon color="#000000" class="modal__icon">
             <Close @click="close" />
           </el-icon>
@@ -37,7 +26,7 @@
       </div>
     </template>
 
-    <div class="modal__content" :style="{ height: getModalHeight }">
+    <div class="modal__content" :style="{ height: `${height}px` }">
       <slot name="content" />
     </div>
 
@@ -50,14 +39,13 @@
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue'
-
-import { Close, CopyDocument, FullScreen } from '@element-plus/icons-vue'
+/** @module Icons - Иконки */
+import { Close } from '@element-plus/icons-vue'
 
 export default {
   name: 'SystemModal',
 
-  components: { Close, CopyDocument, FullScreen },
+  components: { Close },
 
   props: {
     /** @param {boolean} modelValue - Видимость модального окна */
@@ -100,14 +88,6 @@ export default {
   emits: ['onHideModal', 'update:modelValue'],
 
   setup(props, { emit }) {
-    const isFullScreen = ref(false)
-
-    /** @function
-     * @name getModalHeight - Получение высоты модального окна в пикселях */
-    const getModalHeight = computed(() => {
-      return !isFullScreen.value ? `${props.height}px` : '100%'
-    })
-
     /** @function
      * @name onUpdateVisible - Обновление видимости модального окна */
     const onUpdateVisible = () => emit('update:modelValue')
@@ -116,7 +96,7 @@ export default {
      * @name onHideModal - Закрытие модального окна */
     const onHideModal = () => emit('onHideModal')
 
-    return { isFullScreen, getModalHeight, onHideModal, onUpdateVisible }
+    return { onHideModal, onUpdateVisible }
   }
 }
 </script>
@@ -154,9 +134,6 @@ export default {
     width: 100%;
     padding: 24px;
     border-bottom: 1px solid var(--el-border-color);
-  }
-
-  &__content {
   }
 
   &__footer {

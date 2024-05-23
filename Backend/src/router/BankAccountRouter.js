@@ -9,8 +9,10 @@ const BankAccountRouter = new Router()
 
 BankAccountRouter.use(AuthMiddleware)
 
-BankAccountRouter.post('/bankAccounts/purposes', BankAccountController.create)
-BankAccountRouter.get('/bankAccounts/purposes/:id', BankAccountController.getPurpose)
-BankAccountRouter.delete('/bankAccounts/purposes/:id', BankAccountController.remove)
+BankAccountRouter.post('/bank-accounts', BankAccountController.create)
+BankAccountRouter.get('/bank-accounts/:id', BankAccountController.get)
+BankAccountRouter.get('/bank-accounts', BankAccountController.list)
+BankAccountRouter.put('/bank-accounts/:id', BankAccountController.update)
+BankAccountRouter.delete('/bank-accounts/:id', BankAccountController.remove)
 
 export default BankAccountRouter

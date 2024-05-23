@@ -1,32 +1,36 @@
 <template>
   <div class="categories-list">
-    <el-table
-      table-layout="fixed"
-      :data="tableData"
-      :border="true"
-      :row-style="getTableRowStyle"
-      @row-click="onRowClicked"
-    >
+    <!-- Таблица -->
+    <el-table table-layout="fixed" :data="tableData" :border="true" @row-click="onRowClicked">
+      <!-- Номер -->
       <el-table-column type="index" label="Номер" width="80px" :resizable="false" />
-      <el-table-column prop="name" label="Наименование" />
+      <!-- Номер -->
+      <el-table-column prop="name" label="Номер" />
+      <!-- Описание -->
       <el-table-column prop="description" label="Описание" />
+      <!-- Тип -->
       <el-table-column prop="type" label="Тип" :resizable="false">
-        <template #default="{ row }">{{ typeCategories[row.type] }}</template>
+        <template #default="{ row }">
+          <el-tag :color="rowStyleCategories[row.type]" type="info">
+            {{ typeCategories[row.type] }}
+          </el-tag>
+        </template>
       </el-table-column>
     </el-table>
 
+    <!-- Создание категории -->
     <Teleport v-if="isMounted" to=".page-header">
-      <!-- Кнопка действия -->
       <el-button type="primary" @click="openCardInCreateMode">Создать категорию</el-button>
     </Teleport>
 
+    <!-- Карточка категории -->
     <CategoryCard
       v-model="category.visibility"
       :id="category.activeRow._id"
       :mode="category.cardMode"
       @on-object-created="onObjectedCreated"
       @on-object-updated="onObjectedUpdated"
-      @on-hide-modal="onHideCard"
+      @on-hide-modal="category.visibility = false"
     />
   </div>
 </template>
@@ -37,12 +41,13 @@ import { reactive, onMounted, ref } from 'vue'
 import CategoryService from '@/components/categories/service/CategoryService.js'
 
 import { typeCategories, rowStyleCategories } from '@/components/categories/enums/enumCategories.js'
-import CategoryCard from '@/components/categories/card/category/CategoryCard.vue'
+import CategoryCard from '@/components/categories/card/CategoryCard.vue'
+import TransactionCard from '@/components/transactions/card/TransactionCard.vue'
 
 export default {
   name: 'CategoriesList',
 
-  components: { CategoryCard },
+  components: { TransactionCard, CategoryCard },
 
   setup(props, { emit }) {
     const isMounted = ref(false)
@@ -58,9 +63,7 @@ export default {
     const tableData = ref([])
 
     const getTableRowStyle = ({ row }) => {
-      return {
-        backgroundColor: rowStyleCategories[row.type]
-      }
+      return { backgroundColor: rowStyleCategories[row.type] }
     }
 
     const openCardInCreateMode = () => {
@@ -70,6 +73,8 @@ export default {
 
     const onRowClicked = (row) => {
       category.activeRow = row
+
+      category.cardMode = 'edit'
 
       category.visibility = true
     }
@@ -101,11 +106,6 @@ export default {
       }
     }
 
-    const onHideCard = () => {
-      category.visibility = false
-      category.cardMode = 'edit'
-    }
-
     getCategories()
 
     onMounted(() => {
@@ -117,7 +117,7 @@ export default {
       tableData,
       isMounted,
       typeCategories,
-      onHideCard,
+      rowStyleCategories,
       onRowClicked,
       getTableRowStyle,
       onObjectedCreated,

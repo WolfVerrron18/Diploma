@@ -1,16 +1,13 @@
 /** @module lodash - Библиотека вспомогательных функций */
 import { forEach } from 'lodash'
 
-/** @module enumCategories - Перечисление списков данных для работы с категорией */
-import { enumTypeCategories } from '@/components/categories/enums/enumCategories.js'
-
-/** @class CategoryModel - Базовый класс модели */
-export class CategoryModel {
+/** @class BankAccountModel - Базовый класс модели счёта */
+export class BankAccountModel {
   constructor(category) {
     this.name = '' // Наименование
     this.description = '' // Описание
-    this.type = enumTypeCategories.income // Тип
-    this.color = '#877EEA' // Цвет
+    this.value = 0 // Значение счёта
+    this.isHide = false // Скрыт ли счёт
 
     this.fillFields(category)
   }

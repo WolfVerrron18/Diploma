@@ -1,20 +1,49 @@
 <template>
   <div class="bank-account-card">
+    <!-- Обёртка карточки -->
     <div class="bank-account-card__wrapper">
+      <!-- Контент карточки -->
       <div class="bank-account-card__content">
-        <SystemInput class="bank-account-card__item" label="Название" :disabled="readonly" />
+        <!-- Название -->
+        <SystemInput
+          v-model.trim="bankAccount.name"
+          :required="true"
+          class="bank-account-card__item"
+          label="Название"
+          :disabled="readonly"
+          @change:model-value="updateBankAccount"
+        />
 
-        <SystemInput label="Описание" type-field="textarea" :disabled="readonly" />
+        <!-- Описание -->
+        <SystemInput
+          v-model.trim="bankAccount.description"
+          class="bank-account-card__item"
+          label="Описание"
+          type-field="textarea"
+          :disabled="readonly"
+          @change:model-value="updateBankAccount"
+        />
 
-        <SystemSelect label="Валюта" :options="currencyOptions">
-          <template #option="{ option }">
-            {{ currencyList[option.value] }} {{ option.label }}
-          </template>
-        </SystemSelect>
+        <!-- Сумма -->
+        <SystemInputNumber
+          v-model="bankAccount.value"
+          class="purpose__item"
+          label="Сумма"
+          :disabled="isMode.edit"
+          @update:model-value="updateBankAccount"
+        />
 
-        <Doughnut class="bank-account-card__chart" :options="chartOptions" :data="chartData" />
-
-        <el-button class="bank-account-card__btn" type="primary"> Сохранить </el-button>
+        <!--        <Doughnut class="bank-account-card__chart" :options="chartOptions" :data="chartData" />-->
+        <el-button
+          v-if="isMode.create"
+          class="bank-account-card__btn"
+          type="primary"
+          :loading="loading.button"
+          :disabled="!(isContentChanged && isAllowSave)"
+          @click="createBankAccount"
+        >
+          Сохранить
+        </el-button>
       </div>
 
       <SystemTabs class="bank-account-card__tabs" :tabs="tabs" />
@@ -34,23 +63,37 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js'
-
+import { BankAccountModel } from '@/components/bank-accounts/card/model/BankAccountModel.js'
+import BankAccountsService from '@/components/bank-accounts/service/BankAccountsService.js'
 import SystemInput from '@/components/system/SystemInput.vue'
-import { computed } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import SystemTabs from '@/components/system/SystemTabs.vue'
 import SystemSelect from '@/components/system/SystemSelect.vue'
-import { currencyList, enumCurrencyId } from '@/components/bank-accounts/enums/enumCurrency.js'
+import SystemInputNumber from '@/components/system/SystemInputNumber.vue'
+import { isEqual } from 'lodash'
 
 export default {
   name: 'BankAccountCard',
 
-  components: { SystemSelect, SystemTabs, SystemInput, Doughnut },
+  components: { SystemInputNumber, SystemSelect, SystemTabs, SystemInput, Doughnut },
 
   props: {
+    /** @param {string} id - Идентификатор счёта */
+    id: {
+      type: String,
+      default: ''
+    },
+
     /** @param {boolean} readonly - Режим только чтения */
     readonly: {
       type: Boolean,
       default: false
+    },
+
+    /** @param {object} defaultData - Данные карточки по умолчанию */
+    defaultData: {
+      type: Object,
+      default: () => ({})
     },
 
     /** @param {string} mode - Режим работы с карточкой */
@@ -63,8 +106,18 @@ export default {
     }
   },
 
+  emits: ['onObjectCreated'],
+
   setup(props, { emit }) {
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement)
+
+    const bankAccount = ref({})
+    const model = ref({})
+
+    const loading = reactive({
+      card: false,
+      button: false
+    })
 
     const isMode = computed(() => ({
       edit: props.mode === 'edit',
@@ -84,38 +137,99 @@ export default {
       ]
     })
 
-    const currencyOptions = [
-      {
-        value: enumCurrencyId.ruble,
-        label: 'Рубль'
-      },
-      {
-        value: enumCurrencyId.dollar,
-        label: 'Доллар'
-      },
-      {
-        value: enumCurrencyId.euro,
-        label: 'Евро'
+    /** @computed
+     * @name isAllowSave - Разрешено ли сохранять карточку */
+    const isAllowSave = computed(() => {
+      return !!bankAccount.value.name.length
+    })
+
+    /** @computed
+     * @name isContentChanged - Изменился ли контент карточки */
+    const isContentChanged = computed(() => {
+      return !isEqual(bankAccount.value, model.value)
+    })
+
+    /** @function
+     * @name createBankAccount - Создание банковского счёта */
+    const createBankAccount = async () => {
+      loading.button = true
+
+      try {
+        const { data } = await BankAccountsService.accounts.create(bankAccount.value)
+
+        emit('onObjectCreated', data)
+      } finally {
+        loading.button = false
       }
-    ]
-
-    const chartData = {
-      labels: ['January', 'February', 'March'],
-      datasets: [
-        {
-          displayName: 'Аналитика',
-          data: [40, 20, 12],
-          backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
-          hoverOffset: 4
-        }
-      ]
     }
 
-    const chartOptions = {
-      responsive: true
+    /** @function
+     * @name updateCategory - Обновление банковского счёта */
+    const updateBankAccount = async () => {
+      if (isMode.value.create) return
+
+      loading.card = true
+
+      try {
+        const { data } = await BankAccountsService.accounts.update(
+          bankAccount.value._id,
+          bankAccount.value
+        )
+
+        bankAccount.value = data
+        model.value = { ...data }
+
+        emit('onObjectUpdated', data)
+      } finally {
+        loading.card = false
+      }
     }
 
-    return { chartData, chartOptions, currencyOptions, currencyList, tabs }
+    /** @function
+     * @name getBankAccount - Получение банковского счёта */
+    const getBankAccount = async () => {
+      loading.card = true
+
+      try {
+        const { data } = await BankAccountsService.accounts.get(props.id)
+
+        bankAccount.value = data
+        model.value = { ...data }
+      } finally {
+        loading.card = false
+      }
+    }
+
+    /** @function
+     * @name initBankAccount - Инициализация банковского счёта */
+    const initBankAccount = () => {
+      if (isMode.value.create) {
+        bankAccount.value = new BankAccountModel(props.defaultData)
+        model.value = new BankAccountModel(props.defaultData)
+      } else {
+        getBankAccount()
+      }
+    }
+
+    initBankAccount()
+
+    watch(
+      () => props.id,
+      (newId) => {
+        if (newId && isMode.value.edit) getBankAccount()
+      }
+    )
+
+    return {
+      loading,
+      bankAccount,
+      tabs,
+      isMode,
+      isAllowSave,
+      isContentChanged,
+      createBankAccount,
+      updateBankAccount
+    }
   }
 }
 </script>

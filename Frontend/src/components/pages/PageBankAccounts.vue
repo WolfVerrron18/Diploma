@@ -10,21 +10,37 @@
     <div class="page-bank-accounts__wrapper">
       <div class="page-bank-accounts__accounts">
         <BankAccount
-          v-for="(account, index) in accounts"
+          v-for="(account, index) in bankAccounts.list"
           :key="index"
+          :active-id="bankAccounts.activeAccount._id"
           class="page-bank-accounts__item"
           :index="index"
           :account="account"
+          @click="onBankAccountClicked(index)"
         />
       </div>
 
-      <BankAccountCard />
+      <BankAccountCard
+        v-if="!bankAccounts.loading"
+        :key="bankAccounts.cardMode"
+        :id="bankAccounts.activeAccount._id"
+        :mode="bankAccounts.cardMode"
+        @on-object-created="onBankAccountCreated"
+      />
     </div>
+
+    <Teleport v-if="isMounted" to=".page-header">
+      <!-- Кнопка действия -->
+      <el-button type="primary" @click="openCardInCreateMode">Создать счёт</el-button>
+    </Teleport>
   </div>
 </template>
 
 <script>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
+
+/** @class BankAccountsService - Сервис для работы с банковскими счетами */
+import BankAccountsService from '@/components/bank-accounts/service/BankAccountsService.js'
 
 /** @module Components - Компоненты */
 import PageHeader from '@/components/system/PageHeader.vue'
@@ -37,9 +53,13 @@ export default {
   components: { BankAccountCard, BankAccount, PageHeader },
 
   setup() {
+    const isMounted = ref(false)
+
     const bankAccounts = reactive({
-      visibility: false,
-      cardMode: 'edit'
+      cardMode: 'edit',
+      list: [],
+      loading: false,
+      activeAccount: {}
     })
 
     const accounts = ref([
@@ -57,7 +77,48 @@ export default {
       }
     ])
 
-    return { bankAccounts, accounts }
+    const openCardInCreateMode = () => {
+      bankAccounts.cardMode = 'create'
+    }
+
+    const onBankAccountClicked = (index) => {
+      bankAccounts.cardMode = 'edit'
+
+      bankAccounts.activeAccount = bankAccounts.list[index]
+    }
+
+    const onBankAccountCreated = (account) => {
+      bankAccounts.list.push(account)
+    }
+
+    const getAccounts = async () => {
+      bankAccounts.loading = true
+
+      try {
+        const { data } = await BankAccountsService.accounts.list()
+
+        bankAccounts.list = data
+
+        bankAccounts.activeAccount = data[0] ?? {}
+      } finally {
+        bankAccounts.loading = false
+      }
+    }
+
+    getAccounts()
+
+    onMounted(() => {
+      isMounted.value = true
+    })
+
+    return {
+      isMounted,
+      bankAccounts,
+      accounts,
+      openCardInCreateMode,
+      onBankAccountCreated,
+      onBankAccountClicked
+    }
   }
 }
 </script>

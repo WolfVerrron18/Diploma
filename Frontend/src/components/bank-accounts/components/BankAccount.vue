@@ -1,14 +1,14 @@
 <template>
-  <div class="bank-account">
+  <div class="bank-account" :class="{ 'bank-account_active': activeId === account._id }">
     <!-- Валюта счёта -->
     <el-avatar class="bank-account__avatar">
-      <el-avatar size="small"> {{ currencyValue }} </el-avatar>
+      <el-avatar size="small"> ₽ </el-avatar>
     </el-avatar>
 
     <!-- Счёт -->
     <div class="bank-account__wrapper">
       <!-- Остаток счёта -->
-      <p class="bank-account__remains">{{ account.remains }} {{ currencyValue }}</p>
+      <p class="bank-account__remains">{{ account.value }}</p>
 
       <!-- Наименование счёта -->
       <p class="bank-account__title">{{ account.name }}</p>
@@ -16,11 +16,6 @@
 
     <!-- Контролы -->
     <div class="bank-account__controls">
-      <!-- Скрыть / Показать -->
-      <el-icon color="#303133">
-        <component :is="stateIcon" />
-      </el-icon>
-
       <!-- Удалить -->
       <el-icon color="#303133" @click="onRemoveAccount"><Delete /></el-icon>
     </div>
@@ -28,24 +23,21 @@
 </template>
 
 <script>
-import { computed } from 'vue'
-
 /** @module Icons - Иконки */
-import { Delete, Hide, View } from '@element-plus/icons-vue'
-
-/** @module enumCurrency - Списки возможных состояний счёта */
-import {
-  currencyList,
-  stateAccountIcon,
-  enumStateAccountId
-} from '@/components/bank-accounts/enums/enumCurrency.js'
+import { Delete } from '@element-plus/icons-vue'
 
 export default {
   name: 'BankAccount',
 
-  components: { View, Delete, Hide },
+  components: { Delete },
 
   props: {
+    /** @param {string} activeId - Активный идентификатор счёта */
+    activeId: {
+      type: String,
+      default: ''
+    },
+
     /** @param {object} account - Счёт */
     account: {
       type: Object,
@@ -62,14 +54,6 @@ export default {
   emits: ['onRemoveAccount', 'onHideAccount'],
 
   setup(props, { emit }) {
-    /** @computed
-     * @name currencyValue - Определение текущей валюты */
-    const currencyValue = computed(() => currencyList[props.account.currency])
-
-    /** @computed
-     * @name stateIcon - Определение состояния счёта */
-    const stateIcon = computed(() => stateAccountIcon[props.account.state])
-
     /** @function
      * @name onRemoveAccount - Удаление счёта */
     const onRemoveAccount = () => {
@@ -79,10 +63,10 @@ export default {
     /** @function
      * @name onHideAccount - Скрытие счёта */
     const onHideAccount = () => {
-      emit('onHideAccount', props.index, enumStateAccountId.display === props.account.state)
+      emit('onHideAccount', props.index)
     }
 
-    return { currencyValue, stateIcon, onRemoveAccount, onHideAccount }
+    return { onRemoveAccount, onHideAccount }
   }
 }
 </script>
@@ -99,6 +83,10 @@ export default {
   border: 1px solid var(--el-border-color);
   border-radius: var(--el-border-radius-round);
   transition: all 0.25s var(--el-transition-function-ease-in-out-bezier);
+
+  &_active {
+    background: var(--el-color-primary-light-8);
+  }
 
   &:hover {
     background: var(--el-color-primary-light-8);

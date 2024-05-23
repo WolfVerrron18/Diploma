@@ -13,15 +13,19 @@
             style="height: 100%"
             class="el-menu-vertical-demo"
             :collapse="isCollapse"
-            @open="handleOpen"
+            @open="
+              (R) => {
+                console.log(R)
+              }
+            "
             @close="handleClose"
           >
-            <RouterLink to="/purpose">
-              <el-menu-item index="0">
-                <el-icon><Star /></el-icon>
-                <template #title> Цели </template>
-              </el-menu-item>
-            </RouterLink>
+            <!--            <RouterLink to="/purpose">-->
+            <!--              <el-menu-item index="0">-->
+            <!--                <el-icon><Star /></el-icon>-->
+            <!--                <template #title> Цели </template>-->
+            <!--              </el-menu-item>-->
+            <!--            </RouterLink>-->
 
             <RouterLink to="/bank-accounts">
               <el-menu-item index="1">
@@ -36,6 +40,13 @@
                 <el-icon><Collection /></el-icon>
 
                 <template #title> Категории </template>
+              </el-menu-item>
+            </RouterLink>
+
+            <RouterLink to="/transactions">
+              <el-menu-item index="3">
+                <el-icon><Sort /></el-icon>
+                <template #title> Транзакции </template>
               </el-menu-item>
             </RouterLink>
           </el-menu>
@@ -64,11 +75,11 @@ import { useUserStore } from '@/stores/user.js'
 import AuthService from '@/services/AuthService.js'
 import { computed, ref } from 'vue'
 import PurposeService from '@/components/purposes/service/PurposeService.js'
-import { Collection, PieChart, Setting, Star, Tickets } from '@element-plus/icons-vue'
+import { Collection, PieChart, Setting, Sort, Star, Tickets } from '@element-plus/icons-vue'
 
 export default {
   name: 'MainLayout',
-  components: { Collection, Tickets, PieChart, Star, Setting },
+  components: { Sort, Collection, Tickets, PieChart, Star, Setting },
 
   setup() {
     const router = useRouter()

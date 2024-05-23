@@ -8,6 +8,7 @@
       :model-value="modelValue"
       :placeholder="placeholder"
       :size="size"
+      :loading="loading"
       @update:model-value="onOptionSelected"
     >
       <!-- Опции выбора выпадающего списка -->
@@ -19,6 +20,10 @@
       >
         <slot name="option" :option="item" />
       </el-option>
+
+      <template #prefix>
+        <slot name="prefix" />
+      </template>
     </el-select>
   </div>
 </template>
@@ -50,6 +55,12 @@ export default {
     options: {
       type: Array,
       default: () => []
+    },
+
+    /** @param {boolean} loading - Идёт ли загрузка */
+    loading: {
+      type: Boolean,
+      default: false
     },
 
     /** @param {string} keyIterationValue - Ключ итерации значения опции */

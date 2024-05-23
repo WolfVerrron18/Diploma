@@ -7,6 +7,7 @@
     :show-footer="isMode.create"
     @on-hide-modal="onHideModal"
   >
+    <!-- Контент карточки -->
     <template #content>
       <div class="category__wrapper" :class="{ 'category__wrapper-overlay': loading.card }">
         <!-- Название -->
@@ -28,7 +29,7 @@
           @change:model-value="updateCategory"
         />
 
-        <!-- Приоритет -->
+        <!-- Тип категори -->
         <SystemSelect
           class="category__item"
           v-model="category.type"
@@ -38,6 +39,7 @@
           @update:model-value="updateCategory"
         />
 
+        <!-- Выбор цвета -->
         <SystemColorPicker
           label="Цвет"
           v-model="category.color"
@@ -46,6 +48,7 @@
       </div>
     </template>
 
+    <!-- Кнопки карточки -->
     <template #footer>
       <el-button @click="onHideModal"> Отмена </el-button>
 
@@ -64,14 +67,19 @@
 <script>
 import { computed, reactive, ref, watch } from 'vue'
 
+/** @module lodash - Библиотека вспомогательных функций */
 import { isEqual } from 'lodash'
 
-import { CategoryModel } from '@/components/categories/card/category/model/CategoryModel.js'
+/** @class CategoryModel - Базовый класс категории */
+import { CategoryModel } from '@/components/categories/card/model/CategoryModel.js'
 
+/** @class CategoryService - Сервис для работы с категориями */
 import CategoryService from '@/components/categories/service/CategoryService.js'
 
+/** @module enumCategories - Списка данных для работы с категорией */
 import { typeCategories, enumTypeCategories } from '@/components/categories/enums/enumCategories.js'
 
+/** @module Components - Системные компоненты */
 import SystemModal from '@/components/system/SystemModal.vue'
 import SystemInput from '@/components/system/SystemInput.vue'
 import SystemSelect from '@/components/system/SystemSelect.vue'
@@ -86,8 +94,7 @@ export default {
     /** @param {string} id - Идентификатор категории */
     id: {
       type: String,
-      default: '',
-      required: true
+      default: ''
     },
 
     /** @param {boolean} modelValue - Видимость карточки */
@@ -156,6 +163,8 @@ export default {
       return isEqual(category.value, model.value)
     })
 
+    /** @function
+     * @name createCategory - Создание категории */
     const createCategory = async () => {
       loading.button = true
 
@@ -168,6 +177,8 @@ export default {
       }
     }
 
+    /** @function
+     * @name updateCategory - Обновление категории */
     const updateCategory = async () => {
       loading.card = true
 
@@ -183,6 +194,8 @@ export default {
       }
     }
 
+    /** @function
+     * @name getCategory - Получение категории */
     const getCategory = async () => {
       loading.card = true
 
@@ -200,6 +213,8 @@ export default {
      * @name onUpdateVisible - Обновление видимости модального окна */
     const onUpdateVisible = () => emit('update:modelValue')
 
+    /** @function
+     * @name initCategory - Инициализация категории */
     const initCategory = () => {
       if (isMode.value.create) {
         category.value = new CategoryModel(props.defaultData)
@@ -209,17 +224,15 @@ export default {
       }
     }
 
-    watch(
-      () => props.modelValue,
-      () => {
-        initCategory()
-      },
-      { immediate: true }
-    )
-
     /** @function
      * @name onHideModal - Закрытие модального окна */
     const onHideModal = () => emit('onHideModal')
+
+    watch(
+      () => props.modelValue,
+      () => initCategory(),
+      { immediate: true }
+    )
 
     return {
       category,

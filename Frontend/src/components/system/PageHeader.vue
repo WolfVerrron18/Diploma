@@ -2,9 +2,6 @@
   <div class="page-header">
     <!-- Заголовок -->
     <h2 class="page-header__title">{{ title }}</h2>
-
-    <!--    &lt;!&ndash; Кнопка действия &ndash;&gt;-->
-    <!--    <el-button type="primary" @click="$emit('onButtonClicked')">{{ buttonText }}</el-button>-->
   </div>
 </template>
 

@@ -17,7 +17,8 @@ import UserRouter from './src/router/UserRouter.js'
 import AuthRouter from './src/router/AuthRouter.js'
 import PurposeRouter from './src/router/PurposeRouter.js'
 import BankAccountRouter from './src/router/BankAccountRouter.js'
-import CategoryRouter from "./src/router/CategoryRouter.js";
+import CategoryRouter from './src/router/CategoryRouter.js'
+import TransactionRouter from './src/router/TransactionRouter.js'
 
 const app = express()
 
@@ -31,6 +32,7 @@ app.use('/api', UserRouter)
 app.use('/api', PurposeRouter)
 app.use('/api', BankAccountRouter)
 app.use('/api', CategoryRouter)
+app.use('/api', TransactionRouter)
 
 connectionDatabase()
 	.then(() => {

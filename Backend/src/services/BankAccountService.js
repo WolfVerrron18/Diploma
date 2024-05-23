@@ -1,19 +1,27 @@
-import PurposeAccountModel from '../models/PurposeAccountModel.js'
+import BankAccountScheme from '../models/BankAccountModel.js'
 
 class BankAccountService {
-	get purpose() {
+	get bankAccounts() {
 		return {
 			/** @function
-			 * @name get - Получение счёта привязанного к цели пользователя */
-			get: (id) => PurposeAccountModel.findById(id),
+			 * @name get - Получение банковского счёта */
+			get: (id) => BankAccountScheme.findById(id),
 
 			/** @function
-			 * @name create - Создание счёта цели пользователя */
-			create: (payload) => PurposeAccountModel.create(payload),
+			 * @name list - Получение списка банковских счетов */
+			list: () => BankAccountScheme.find(),
 
 			/** @function
-			 * @name remove - Удаление счёта цели пользователя */
-			remove: (id) => PurposeAccountModel.findByIdAndDelete(id),
+			 * @name update - Обновление банковского счёта */
+			update: (id, payload) => BankAccountScheme.findByIdAndUpdate(id, payload, { new: true }),
+
+			/** @function
+			 * @name create - Создание банковского счёта */
+			create: (payload) => BankAccountScheme.create(payload),
+
+			/** @function
+			 * @name remove - Удаление банковского счёта */
+			remove: (id) => BankAccountScheme.findByIdAndDelete(id),
 		}
 	}
 }
