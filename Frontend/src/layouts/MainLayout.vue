@@ -9,62 +9,28 @@
       <el-container style="height: calc(100vh - 100px)" default-active="0" :collapse="isCollapse">
         <el-aside width="200px">
           <el-menu
-            default-active="2"
+            default-active="0"
             style="height: 100%"
             class="el-menu-vertical-demo"
             :collapse="isCollapse"
-            @open="
-              (R) => {
-                console.log(R)
-              }
-            "
-            @close="handleClose"
+            @select="onPushRoute"
           >
-            <!--            <RouterLink to="/purpose">-->
-            <!--              <el-menu-item index="0">-->
-            <!--                <el-icon><Star /></el-icon>-->
-            <!--                <template #title> Цели </template>-->
-            <!--              </el-menu-item>-->
-            <!--            </RouterLink>-->
+            <el-menu-item v-for="(page, index) in pages" :key="index" :index="String(index)">
+              <el-icon><component :is="page.icon" /></el-icon>
 
-            <RouterLink to="/bank-accounts">
-              <el-menu-item index="1">
-                <el-icon><Tickets /></el-icon>
-
-                <template #title> Счета </template>
-              </el-menu-item>
-            </RouterLink>
-
-            <RouterLink to="/categories">
-              <el-menu-item index="2">
-                <el-icon><Collection /></el-icon>
-
-                <template #title> Категории </template>
-              </el-menu-item>
-            </RouterLink>
-
-            <RouterLink to="/transactions">
-              <el-menu-item index="3">
-                <el-icon><Sort /></el-icon>
-                <template #title> Транзакции </template>
-              </el-menu-item>
-            </RouterLink>
+              <template #title> {{ page.title }} </template>
+            </el-menu-item>
           </el-menu>
         </el-aside>
         <el-main>
           <RouterView v-slot="{ Component }">
-            <component :is="Component" />
+            <Transition name="dropdown" mode="out-in">
+              <component :is="Component" />
+            </Transition>
           </RouterView>
         </el-main>
       </el-container>
     </el-container>
-
-    <!--    TODO ME-->
-    <!--        <RouterView v-slot="{ Component }">-->
-    <!--          <component :is="Component" />-->
-    <!--        </RouterView>-->
-
-    <!--    <PageAuth />-->
   </div>
 </template>
 
@@ -73,8 +39,7 @@ import { useRouter } from 'vue-router'
 
 import { useUserStore } from '@/stores/user.js'
 import AuthService from '@/services/AuthService.js'
-import { computed, ref } from 'vue'
-import PurposeService from '@/components/purposes/service/PurposeService.js'
+import { computed, onMounted, ref } from 'vue'
 import { Collection, PieChart, Setting, Sort, Star, Tickets } from '@element-plus/icons-vue'
 
 export default {
@@ -92,6 +57,30 @@ export default {
       return store.getUser.name
     })
 
+    const pages = [
+      {
+        name: 'bankAccounts',
+        icon: 'Tickets',
+        title: 'Счета'
+      },
+      {
+        name: 'categories',
+        icon: 'Collection',
+        title: 'Категории'
+      },
+      {
+        name: 'transactions',
+        icon: 'Sort',
+        title: 'Транзакции'
+      }
+    ]
+
+    const onPushRoute = async (index) => {
+      const foundPage = pages[Number(index)]
+
+      await router.push({ name: foundPage.name })
+    }
+
     const logout = async () => {
       await AuthService.auth.logout()
 
@@ -100,13 +89,9 @@ export default {
       await router.push({ name: 'auth' })
     }
 
-    const getPurpose = async () => {
-      const { data } = await PurposeService.purposes.get('664147be64016c68abf1236c')
-      console.log(data)
-    }
-    getPurpose()
+    onMounted(() => onPushRoute('0'))
 
-    return { isCollapse, getUserName, logout }
+    return { pages, isCollapse, getUserName, logout, onPushRoute }
   }
 }
 </script>

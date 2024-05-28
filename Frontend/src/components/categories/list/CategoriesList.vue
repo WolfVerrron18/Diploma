@@ -42,12 +42,11 @@ import CategoryService from '@/components/categories/service/CategoryService.js'
 
 import { typeCategories, rowStyleCategories } from '@/components/categories/enums/enumCategories.js'
 import CategoryCard from '@/components/categories/card/CategoryCard.vue'
-import TransactionCard from '@/components/transactions/card/TransactionCard.vue'
 
 export default {
   name: 'CategoriesList',
 
-  components: { TransactionCard, CategoryCard },
+  components: { CategoryCard },
 
   setup(props, { emit }) {
     const isMounted = ref(false)

@@ -11,7 +11,7 @@ class TransactionService {
 
 			/** @function
 			 * @name list - Получение списка транзакций */
-			list: () => TransactionScheme.find(),
+			list: (params) => TransactionScheme.find(params),
 
 			/** @function
 			 * @name update - Обновление транзакции */
@@ -23,7 +23,7 @@ class TransactionService {
 
 			/** @function
 			 * @name remove - Удаление транзакции */
-			remove: (id) => TransactionScheme.findByIdAndDelete(id),
+			remove: (id) => TransactionScheme.findOneAndDelete({ _id: id }),
 		}
 	}
 }

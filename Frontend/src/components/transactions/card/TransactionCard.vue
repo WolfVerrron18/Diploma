@@ -19,7 +19,7 @@
 
         <!-- Сумма -->
         <SystemInputNumber
-          v-model="transaction.value"
+          v-model="transaction.sum"
           class="transaction__item"
           label="Сумма"
           :disabled="isMode.edit"
@@ -50,6 +50,13 @@
                 {{ typeCategories[option.type] }}
               </el-tag>
             </div>
+          </template>
+
+          <template #prefix>
+            <div
+              class="transaction__circle"
+              :style="{ backgroundColor: rowStyleCategories[transaction.type] }"
+            />
           </template>
         </SystemSelect>
 
@@ -227,9 +234,11 @@ export default {
         getTransaction()
       }
 
-      getCategories()
+      if (props.modelValue) {
+        getCategories()
 
-      getBankAccounts()
+        getBankAccounts()
+      }
     }
 
     /** @function
@@ -359,6 +368,12 @@ export default {
     &-tag {
       min-width: 60px;
     }
+  }
+
+  &__circle {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
   }
 }
 </style>

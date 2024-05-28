@@ -1,7 +1,13 @@
 <template>
   <div class="transactions-list">
     <!-- Таблица -->
-    <el-table table-layout="fixed" :data="tableData" :border="true" @row-click="onRowClicked">
+    <el-table
+      v-loading="loading"
+      table-layout="fixed"
+      :data="tableData"
+      :border="true"
+      @row-click="onRowClicked"
+    >
       <!-- Номер -->
       <el-table-column type="index" label="Номер" width="80px" :resizable="false" />
 
@@ -45,7 +51,9 @@
 
     <!-- Создание категории -->
     <Teleport v-if="isMounted" to=".page-header">
-      <el-button type="primary" @click="openCardInCreateMode">Создать транзакцию</el-button>
+      <el-button type="primary" :disabled="loading" @click="openCardInCreateMode"
+        >Создать транзакцию</el-button
+      >
     </Teleport>
 
     <TransactionCard
@@ -98,11 +106,17 @@ export default {
     }
 
     const onRowRemoved = async (index) => {
+      loading.value = true
+
       const foundRowTransaction = tableData.value[index]
 
-      await TransactionService.transactions.remove(foundRowTransaction._id)
+      try {
+        await TransactionService.transactions.remove(foundRowTransaction._id)
 
-      tableData.value.splice(index, 1)
+        tableData.value.splice(index, 1)
+      } finally {
+        loading.value = false
+      }
     }
 
     const getTableRowStyle = (row) => {
@@ -150,6 +164,7 @@ export default {
       transaction,
       tableData,
       isMounted,
+      loading,
       typeCategories,
       rowStyleCategories,
       onRowClicked,

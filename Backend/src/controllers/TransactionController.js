@@ -1,5 +1,6 @@
 /** @class TransactionService - Класс для работы с транзакциями */
 import TransactionService from '../services/TransactionService.js'
+import logger from '../logger/logger.js'
 
 /** @class TransactionController - Класс контроллера для работы с транзакциями */
 class TransactionController {
@@ -20,7 +21,7 @@ class TransactionController {
 	async list(req, res) {
 		try {
 			const transactions = await TransactionService.transactions
-				.list()
+				.list(req.query)
 				.populate('categoryId')
 				.exec()
 
@@ -46,7 +47,10 @@ class TransactionController {
 	 * @name update - Обновление транзакции */
 	async update(req, res) {
 		try {
-			const transaction = await TransactionService.transactions.update(req.params.id, req.body)
+			const transaction = await TransactionService.transactions
+				.update(req.params.id, req.body)
+				.populate('categoryId')
+				.exec()
 
 			res.status(200).json(transaction)
 		} catch (e) {
@@ -60,7 +64,7 @@ class TransactionController {
 		try {
 			await TransactionService.transactions.remove(req.params.id)
 
-			res.status(200)
+			res.status(200).json()
 		} catch (e) {
 			res.status(500).json(e)
 		}

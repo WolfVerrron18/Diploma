@@ -21,7 +21,12 @@
     </el-form-item>
 
     <el-form-item>
-      <el-button type="primary" :loading="loadingSubmitButton" @click="submitForm(formRef)">
+      <el-button
+        class="login-form__button"
+        type="primary"
+        :loading="loadingSubmitButton"
+        @click="submitForm(formRef)"
+      >
         Войти
       </el-button>
     </el-form-item>
@@ -73,10 +78,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .login-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  &__button {
+    width: 100%;
+  }
 }
 </style>

@@ -1,26 +1,30 @@
 <template>
-  <div class="auth">
-    <div class="auth__card">
-      <el-radio-group v-model="activeViewAuth" size="small" class="auth__select-group">
-        <el-radio-button
-          v-for="(view, index) in viewAuth"
-          :key="index"
-          :label="view.label"
-          :value="view.value"
+  <div class="page-auth">
+    <Transition name="dropdown" mode="out-in">
+      <AuthWrapper
+        class="page-auth__wrapper"
+        :title="defineActiveViewAuth.title"
+        :key="defineActiveViewAuth.id"
+      >
+        <component
+          :is="defineActiveViewAuth.id"
+          :loading-submit-button="loadingSubmitButton"
+          @on-form-submitted="authUser"
         />
-      </el-radio-group>
 
-      <component
-        :is="activeViewAuth"
-        :loading-submit-button="loadingSubmitButton"
-        @on-form-submitted="authUser"
-      />
-    </div>
+        <div class="page-auth__wrapper-controls">
+          <el-text>{{ defineActiveViewAuth.text }}</el-text>
+          <el-button type="primary" link @click="changeAuthentication">
+            {{ defineActiveViewAuth.button }}
+          </el-button>
+        </div>
+      </AuthWrapper>
+    </Transition>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useRouter } from 'vue-router'
 
@@ -39,11 +43,12 @@ import UserService from '@/services/UserService.js'
 /** @module Components - Компоненты */
 import LoginForm from '@/components/auth/LoginForm.vue'
 import RegisterForm from '@/components/auth/RegisterForm.vue'
+import AuthWrapper from '@/components/auth/AuthWrapper.vue'
 
 export default {
   name: 'PageAuth',
 
-  components: { LoginForm, RegisterForm },
+  components: { AuthWrapper, LoginForm, RegisterForm },
 
   setup() {
     const router = useRouter()
@@ -56,14 +61,33 @@ export default {
 
     const viewAuth = [
       {
-        label: 'Вход',
-        value: 'LoginForm'
+        title: 'Вход',
+        id: 'LoginForm',
+        text: 'У вас нет аккаунта?',
+        button: 'Зарегистрироваться'
       },
       {
-        label: 'Регистрация',
-        value: 'RegisterForm'
+        title: 'Регистрация',
+        id: 'RegisterForm',
+        text: 'У вас уже есть аккаунт?',
+        button: 'Войти'
       }
     ]
+
+    /** @function
+     * @name defineActiveViewAuth - Определение активного представления аутентификации пользователя */
+    const defineActiveViewAuth = computed(() => {
+      return viewAuth.find((auth) => auth.id === activeViewAuth.value)
+    })
+
+    const changeAuthentication = () => {
+      const methods = {
+        RegisterForm: 'LoginForm',
+        LoginForm: 'RegisterForm'
+      }
+
+      activeViewAuth.value = methods[activeViewAuth.value]
+    }
 
     /** @function
      * @name authUser - Аутентификация пользователя */
@@ -90,31 +114,29 @@ export default {
       }
     }
 
-    return { activeViewAuth, viewAuth, loadingSubmitButton, authUser }
+    return {
+      activeViewAuth,
+      viewAuth,
+      loadingSubmitButton,
+      defineActiveViewAuth,
+      authUser,
+      changeAuthentication
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.auth {
+.page-auth {
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  &__card {
-    max-width: 300px;
-    height: fit-content;
-    background: white;
-    padding: 10px;
-    border: 1px solid var(--el-menu-border-color);
-    border-radius: var(--main-border-radius);
-  }
-
-  &__select-group {
+  &__wrapper-controls {
     display: flex;
+    gap: 5px;
     justify-content: center;
-    margin-bottom: 20px;
   }
 }
 </style>

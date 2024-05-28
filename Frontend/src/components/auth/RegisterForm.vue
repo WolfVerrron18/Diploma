@@ -37,7 +37,9 @@
     </el-form-item>
 
     <el-form-item>
-      <el-button type="primary" @click="submitForm(formRef)">Зарегистрироваться</el-button>
+      <el-button class="register-form__button" type="primary" @click="submitForm(formRef)">
+        Зарегистрироваться
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -90,10 +92,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .register-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  &__button {
+    width: 100%;
+  }
 }
 </style>

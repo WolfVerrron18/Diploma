@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 export default {
   name: 'SystemTabs',
@@ -20,6 +20,12 @@ export default {
     tabs: {
       type: Array,
       default: () => []
+    },
+
+    /** @param {boolean} useDefaultTab - Использовать вкладку по умолчанию */
+    useDefaultTab: {
+      type: Boolean,
+      default: true
     },
 
     /** @param {string} tabPosition - Расположение вкладок */
@@ -39,7 +45,11 @@ export default {
 
     /** @function
      * @name onTabSelected - Вкладка была выбрана */
-    const onTabSelected = () => emit('onTabSelected')
+    const onTabSelected = () => emit('onTabSelected', activeTab.value)
+
+    onMounted(() => {
+      if (props.useDefaultTab) onTabSelected()
+    })
 
     return { activeTab, onTabSelected }
   }

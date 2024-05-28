@@ -20,18 +20,26 @@
         />
       </div>
 
-      <BankAccountCard
-        v-if="!bankAccounts.loading"
-        :key="bankAccounts.cardMode"
-        :id="bankAccounts.activeAccount._id"
-        :mode="bankAccounts.cardMode"
-        @on-object-created="onBankAccountCreated"
-      />
+      <Transition name="dropdown" mode="out-in">
+        <BankAccountCard
+          v-if="!bankAccounts.loading"
+          :key="bankAccounts.cardMode"
+          :id="bankAccounts.activeAccount._id"
+          :mode="bankAccounts.cardMode"
+          @on-cancel-create="cancelCreate"
+          @on-object-created="onBankAccountCreated"
+        />
+      </Transition>
     </div>
 
     <Teleport v-if="isMounted" to=".page-header">
       <!-- Кнопка действия -->
-      <el-button type="primary" @click="openCardInCreateMode">Создать счёт</el-button>
+      <el-button
+        type="primary"
+        :disabled="bankAccounts.cardMode === 'create'"
+        @click="openCardInCreateMode"
+        >Создать счёт</el-button
+      >
     </Teleport>
   </div>
 </template>
@@ -77,7 +85,13 @@ export default {
       }
     ])
 
+    const cancelCreate = () => {
+      bankAccounts.cardMode = 'edit'
+      bankAccounts.activeAccount = bankAccounts.list[0]
+    }
+
     const openCardInCreateMode = () => {
+      bankAccounts.activeAccount = {}
       bankAccounts.cardMode = 'create'
     }
 
@@ -115,6 +129,7 @@ export default {
       isMounted,
       bankAccounts,
       accounts,
+      cancelCreate,
       openCardInCreateMode,
       onBankAccountCreated,
       onBankAccountClicked

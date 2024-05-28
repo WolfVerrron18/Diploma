@@ -1,52 +1,46 @@
 <template>
   <div class="bank-account-card">
-    <!-- Обёртка карточки -->
+    <!-- Обёртка -->
     <div class="bank-account-card__wrapper">
-      <!-- Контент карточки -->
+      <!-- Контент -->
       <div class="bank-account-card__content">
-        <!-- Название -->
-        <SystemInput
-          v-model.trim="bankAccount.name"
-          :required="true"
-          class="bank-account-card__item"
-          label="Название"
-          :disabled="readonly"
-          @change:model-value="updateBankAccount"
-        />
+        <!-- Представление -->
+        <Transition name="dropdown" mode="out-in">
+          <component
+            :key="id"
+            :is="defineSelectableComponent?.component"
+            :id="id"
+            :bank-account="bankAccount"
+            :is-mode="isMode"
+            :readonly="!(isContentChanged && isAllowSave)"
+          />
+        </Transition>
 
-        <!-- Описание -->
-        <SystemInput
-          v-model.trim="bankAccount.description"
-          class="bank-account-card__item"
-          label="Описание"
-          type-field="textarea"
-          :disabled="readonly"
-          @change:model-value="updateBankAccount"
-        />
+        <!-- Кнопки -->
+        <div v-if="isMode.create" class="bank-account-card__buttons">
+          <!-- Отмена -->
+          <el-button @click="cancelCreate"> Отмена </el-button>
 
-        <!-- Сумма -->
-        <SystemInputNumber
-          v-model="bankAccount.value"
-          class="purpose__item"
-          label="Сумма"
-          :disabled="isMode.edit"
-          @update:model-value="updateBankAccount"
-        />
-
-        <!--        <Doughnut class="bank-account-card__chart" :options="chartOptions" :data="chartData" />-->
-        <el-button
-          v-if="isMode.create"
-          class="bank-account-card__btn"
-          type="primary"
-          :loading="loading.button"
-          :disabled="!(isContentChanged && isAllowSave)"
-          @click="createBankAccount"
-        >
-          Сохранить
-        </el-button>
+          <!-- Сохранить -->
+          <el-button
+            v-if="isMode.create"
+            type="primary"
+            :loading="loading.button"
+            :disabled="readonly || !isAllowSave"
+            @click="createBankAccount"
+          >
+            Сохранить
+          </el-button>
+        </div>
       </div>
 
-      <SystemTabs class="bank-account-card__tabs" :tabs="tabs" />
+      <!-- Вкладки -->
+      <SystemTabs
+        v-if="isMode.edit"
+        class="bank-account-card__tabs"
+        :tabs="tabs"
+        @on-tab-selected="selectTab"
+      />
     </div>
   </div>
 </template>
@@ -71,11 +65,21 @@ import SystemTabs from '@/components/system/SystemTabs.vue'
 import SystemSelect from '@/components/system/SystemSelect.vue'
 import SystemInputNumber from '@/components/system/SystemInputNumber.vue'
 import { isEqual } from 'lodash'
+import BankAccountGeneral from '@/components/bank-accounts/card/views/BankAccountGeneral.vue'
+import BankAccountHistory from '@/components/bank-accounts/card/views/BankAccountHistory.vue'
 
 export default {
   name: 'BankAccountCard',
 
-  components: { SystemInputNumber, SystemSelect, SystemTabs, SystemInput, Doughnut },
+  components: {
+    SystemInputNumber,
+    SystemSelect,
+    SystemTabs,
+    SystemInput,
+    Doughnut,
+    BankAccountGeneral,
+    BankAccountHistory
+  },
 
   props: {
     /** @param {string} id - Идентификатор счёта */
@@ -106,13 +110,28 @@ export default {
     }
   },
 
-  emits: ['onObjectCreated'],
+  emits: ['onObjectCreated', 'onCancelCreate'],
 
   setup(props, { emit }) {
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement)
 
+    const tabs = [
+      {
+        id: 'general',
+        title: 'Общее',
+        component: 'BankAccountGeneral'
+      },
+      {
+        id: 'history',
+        title: 'История',
+        component: 'BankAccountHistory'
+      }
+    ]
+
     const bankAccount = ref({})
     const model = ref({})
+
+    const activeTabId = ref('')
 
     const loading = reactive({
       card: false,
@@ -123,19 +142,6 @@ export default {
       edit: props.mode === 'edit',
       create: props.mode === 'create'
     }))
-
-    const tabs = computed(() => {
-      return [
-        {
-          id: 'general',
-          title: 'Общее'
-        },
-        {
-          id: 'history',
-          title: 'История'
-        }
-      ]
-    })
 
     /** @computed
      * @name isAllowSave - Разрешено ли сохранять карточку */
@@ -148,6 +154,14 @@ export default {
     const isContentChanged = computed(() => {
       return !isEqual(bankAccount.value, model.value)
     })
+
+    const defineSelectableComponent = computed(() => {
+      return tabs.find((tab) => tab.id === activeTabId.value)
+    })
+
+    const selectTab = (tab) => (activeTabId.value = tab)
+
+    const cancelCreate = () => emit('onCancelCreate')
 
     /** @function
      * @name createBankAccount - Создание банковского счёта */
@@ -206,6 +220,8 @@ export default {
       if (isMode.value.create) {
         bankAccount.value = new BankAccountModel(props.defaultData)
         model.value = new BankAccountModel(props.defaultData)
+
+        activeTabId.value = 'general'
       } else {
         getBankAccount()
       }
@@ -222,11 +238,15 @@ export default {
 
     return {
       loading,
+      activeTabId,
       bankAccount,
       tabs,
       isMode,
       isAllowSave,
       isContentChanged,
+      defineSelectableComponent,
+      selectTab,
+      cancelCreate,
       createBankAccount,
       updateBankAccount
     }
@@ -240,6 +260,7 @@ export default {
     display: grid;
     grid-template-columns: 1fr 100px;
     gap: 10px;
+    height: 100%;
   }
 
   &__item:not(:last-child) {
@@ -252,9 +273,12 @@ export default {
     margin: 16px auto;
   }
 
-  &__btn {
-    display: block;
-    margin: auto;
+  &__buttons {
+    border-top: 1px solid var(--el-menu-border-color);
+    padding-top: 16px;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
   }
 }
 </style>
