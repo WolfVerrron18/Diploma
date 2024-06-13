@@ -9,9 +9,7 @@ class UserService {
 			 * @name get - Получение пользователя */
 			get: (id) => UserModel.findById(id),
 
-			/** @function
-			 * @name get - Получение пользователя */
-			findByParameter: (key, value) => UserModel.findOne({ [key]: value }),
+			findByParameter: (params) => UserModel.findOne(params),
 
 			/** @function
 			 * @name create - Создание пользователя */

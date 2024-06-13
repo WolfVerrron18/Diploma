@@ -7,7 +7,7 @@ import UserService from '../services/UserService.js'
 class AuthController {
 	async login(req, res) {
 		try {
-			const user = await UserService.users.findByParameter('login', req.body.login)
+			const user = await UserService.users.findByParameter({ login: req.body.login })
 
 			if (!user) throw new Error('User not found')
 
