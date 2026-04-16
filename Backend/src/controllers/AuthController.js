@@ -35,7 +35,7 @@ class AuthController {
 
 	async registration(req, res) {
 		try {
-			const foundUser = await UserService.users.findByParameter('login', req.body.login)
+			const foundUser = await UserService.users.findByParameter({ login: req.body.login })
 
 			if (foundUser) throw new Error('USER EXISTS')
 

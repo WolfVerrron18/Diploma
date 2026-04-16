@@ -4,7 +4,12 @@
     <p v-if="label" class="system-date-picker__label">{{ label }}</p>
 
     <!-- Контрол выбора цвета -->
-    <el-date-picker type="datetime" :model-value="modelValue" @update:model-value="onDateChanged" />
+    <el-date-picker
+      type="datetime"
+      :disabled="disabled"
+      :model-value="modelValue"
+      @update:model-value="onDateChanged"
+    />
   </div>
 </template>
 
@@ -23,6 +28,12 @@ export default {
     label: {
       type: String,
       default: ''
+    },
+
+    /** @param {boolean} disabled - Разрешено ли взаимодействие */
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
 

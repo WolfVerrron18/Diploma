@@ -18,6 +18,10 @@ class UserService {
 			/** @function
 			 * @name remove - Удаление пользователя */
 			remove: (id) => UserModel.findByIdAndDelete(id),
+
+			/** @function
+			 * @name update - Обновление пользователя */
+			update: (id, payload) => UserModel.findByIdAndUpdate(id, payload, { new: true }),
 		}
 	}
 }

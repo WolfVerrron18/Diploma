@@ -2,15 +2,17 @@
 import { forEach } from 'lodash'
 
 /** @module enumCategories - Перечисление списков данных для работы с категорией */
-import { enumTypeCategories } from '@/components/categories/enums/enumCategories.js'
+import { enumPriorities, enumStatusNotes } from '@/components/notes/enums/enumNotes.js'
 
 /** @class CategoryModel - Базовый класс модели категории */
 export class CategoryModel {
   constructor(category) {
     this.name = '' // Наименование
     this.description = '' // Описание
-    this.type = enumTypeCategories.income // Тип
+    this.type = enumStatusNotes.inPlans // Состояние
+    this.priority = enumPriorities.low
     this.color = '#877EEA' // Цвет
+    this.dateCreation = new Date()
 
     this.fillFields(category)
   }

@@ -11,7 +11,9 @@ class UserService {
     return {
       /** @function
        * @name getCurrentUser - Получение текущего пользователя */
-      getCurrentUser: () => http.get('api/users/account/my')
+      getCurrentUser: () => http.get('api/users/account/my'),
+
+      update: (id, payload) => http.put(`api/users/${id}`, payload)
     }
   }
 }

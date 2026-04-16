@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 export const connectionDatabase = () => {
-	const uri = 'mongodb+srv://developer:1234567890@wallet.nhhpsum.mongodb.net/?retryWrites=true&w=majority&appName=Wallet'
+	const uri = 'mongodb+srv://slavka0042004_db_user:gfXbUcRRKUfwyx2H@cluster322.jsez4kj.mongodb.net/?appName=Cluster322'
 
 	return  mongoose.connect(uri)
 }

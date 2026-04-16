@@ -109,8 +109,10 @@ export default {
         userStore.setUser(user)
 
         await router.push({ name: 'main' })
+      } catch (e) {
+        loadingSubmitButton.value = false
       } finally {
-        loadingSubmitButton.value = true
+        loadingSubmitButton.value = false
       }
     }
 

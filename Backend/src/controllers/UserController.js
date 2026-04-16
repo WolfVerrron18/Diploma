@@ -60,6 +60,18 @@ class UserController {
 			res.status(500).json(e)
 		}
 	}
+
+	/** @function
+	 * @name update - Обновление пользователя */
+	async update(req, res) {
+		try {
+			const category = await UserService.users.update(req.params.id, req.body)
+
+			res.status(200).json(category)
+		} catch (e) {
+			res.status(500).json(e)
+		}
+	}
 }
 
 export default new UserController()

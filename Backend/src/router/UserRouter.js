@@ -13,5 +13,6 @@ UserRouter.post('/users', UserController.create)
 UserRouter.get('/users/:id', UserController.get)
 UserRouter.get('/users/account/my', UserController.getCurrentUser)
 UserRouter.delete('/users/:id', UserController.remove)
+UserRouter.put('/users/:id', UserController.update)
 
 export default UserRouter

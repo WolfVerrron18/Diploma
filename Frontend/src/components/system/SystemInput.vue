@@ -10,7 +10,6 @@
       :model-value="modelValue"
       :placeholder="placeholder"
       :type="typeField"
-      :maxlength="20"
       @update:model-value="onValueUpdated"
       @change="onValueChanged"
     />
