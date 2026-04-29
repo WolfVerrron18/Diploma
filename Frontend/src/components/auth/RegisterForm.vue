@@ -113,13 +113,6 @@ const submitForm = async (formEl) => {
 
 <style scoped lang="scss">
 .register-form {
-  background-color: var(--el-bg-color-overlay);
-  padding: 25px;
-  border-radius: var(--el-border-radius-base);
-  border: 1px solid var(--el-border-color-light);
-  box-shadow: var(--el-box-shadow-light);
-  transition: all 0.3s ease;
-
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

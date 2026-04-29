@@ -51,10 +51,11 @@
         <el-aside :width="isCollapse ? '64px' : '200px'" class="custom-aside">
           <el-menu
             :default-active="activeMenuIndex"
-            style="height: 100%"
             class="el-menu-vertical"
             :collapse="isCollapse"
             @select="onPushRoute"
+            text-color="rgba(255, 255, 255, 0.7)"
+            active-text-color="#ffffff"
           >
             <el-menu-item v-for="(page, index) in pages" :key="index" :index="String(index)">
               <el-icon><component :is="page.icon" /></el-icon>
@@ -76,22 +77,28 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import AuthService from '@/services/AuthService.js'
+import UserService from '@/services/UserService.js'
 import { useDark, useToggle } from '@vueuse/core' // Нужна библиотека @vueuse/core
-import { Tickets, PieChart, Star, Setting, Sort, Sunny, Moon } from '@element-plus/icons-vue'
+import { Star, Setting, Sort, Sunny, Moon } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 const store = useUserStore()
 const isCollapse = ref(false)
 
-// --- Логика темной темы ---
-// Автоматически добавляет класс .dark на элемент <html> и сохраняет в LocalStorage
-const isDark = useDark()
-const toggleDark = useToggle(isDark)
+// 1. Инициализируем темную тему
+const isDark = useDark({
+  initialValue: 'light',
+  storageKey: 'vueuse-color-scheme',
+  valueDark: 'dark',
+  valueLight: 'light'
+})
+
+const rawToggleDark = useToggle(isDark)
 
 const pages = [
   {
@@ -131,6 +138,25 @@ const currentDate = computed(() => {
 })
 
 // --- Методы ---
+// Метод сохранения настроек
+const toggleDark = async () => {
+  rawToggleDark() // Сначала меняем визуально для скорости (UX)
+
+  try {
+    // Подготавливаем данные для бекенда
+    const payload = { isDarkMode: isDark.value }
+
+    // Вызываем твой метод сервиса
+    // Предполагаем, что store.getUser._id — это текущий ID пользователя
+    if (store.getUser?._id) {
+      await UserService.user.update(store.getUser._id, payload)
+    }
+  } catch (error) {
+    console.error('Ошибка при сохранении темы:', error)
+    // В случае ошибки можно откатить тумблер назад, но для диплома это не критично
+  }
+}
+
 const onPushRoute = async (index) => {
   const foundPage = pages[Number(index)]
   if (foundPage) {
@@ -142,11 +168,24 @@ const logout = async () => {
   try {
     await AuthService.auth.logout()
     localStorage.clear()
+    store.setUser({})
     await router.push({ name: 'auth' })
   } catch (error) {
     console.error('Ошибка при выходе:', error)
   }
 }
+
+// 3. Синхронизация при загрузке:
+// Когда данные пользователя прилетают из getCurrentUser, подтягиваем тему в переключатель
+watch(
+  () => store.getUser?.isDarkMode,
+  (newVal) => {
+    if (newVal !== undefined) {
+      isDark.value = newVal
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   if (route.path === '/') {
@@ -161,8 +200,9 @@ onMounted(() => {
   overflow: hidden;
 
   .custom-header {
-    background: linear-gradient(90deg, #409eff 0%, #64b5f6 100%);
-    color: white;
+    background-color: var(
+      --el-color-primary
+    ); // Теперь она будет зависеть от выбранного настроения    color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -243,10 +283,25 @@ onMounted(() => {
   }
 
   .custom-aside {
-    border-right: 1px solid var(--el-border-color-light);
-    transition:
-      width 0.3s,
-      background-color 0.3s;
+    transition: all 0.3s;
+    // Используем основной цвет, но накладываем сильное затемнение (80%)
+    background-color: color-mix(in srgb, var(--el-color-primary), #000 80%) !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+
+    .el-menu {
+      background-color: transparent !important;
+      border-right: none;
+
+      // Текст делаем приглушенным белым
+      --el-menu-text-color: rgba(255, 255, 255, 0.6);
+      --el-menu-hover-bg-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  // Активный пункт меню выделяем цветом темы
+  :deep(.el-menu-item.is-active) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--el-color-primary) !important; // Иконка и текст светятся цветом темы
   }
 
   .custom-main {

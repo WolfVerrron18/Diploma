@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+
+import { applyMoodTheme } from '@/data/ColorThemes.js'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref({})
@@ -9,6 +11,19 @@ export const useUserStore = defineStore('user', () => {
   const setUser = (data) => {
     user.value = data
   }
+
+  // Следим за изменением объекта пользователя
+  watch(
+    () => user.value,
+    (newUser) => {
+      if (newUser?.mood) {
+        applyMoodTheme(newUser?.mood)
+      } else {
+        applyMoodTheme('default')
+      }
+    },
+    { immediate: true } // Применится сразу при инициализации, если данные уже есть
+  )
 
   return {
     getUser,

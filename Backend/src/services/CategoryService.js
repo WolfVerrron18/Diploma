@@ -11,11 +11,17 @@ class CategoryService {
 
 			/** @function
 			 * @name list - Получение списка категорий */
-			list: () => CategoryScheme.find(),
+			list: (id) => CategoryScheme.find({ user: id }),
 
 			/** @function
 			 * @name update - Обновление категории */
-			update: (id, payload) => CategoryScheme.findByIdAndUpdate(id, payload, { new: true }),
+			update: (id, userId, updateData) => {
+				return CategoryScheme.findOneAndUpdate(
+					{ _id: id, user: userId }, // Ищем категорию по ID И владельцу
+					{ $set: updateData },
+					{ new: true }, // Чтобы вернулся уже обновленный объект
+				)
+			},
 
 			/** @function
 			 * @name create - Создание категории */

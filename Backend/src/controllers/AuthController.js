@@ -15,6 +15,12 @@ class AuthController {
 
 			if (!auth) throw new Error('Password invalid')
 
+			// Сохраняем настроение в БД, если оно пришло с фронта
+			if (req.body.mood) {
+				user.mood = req.body.mood
+				await user.save()
+			}
+
 			global.currentUser = user
 
 			const token = jwt.sign({ id: user._id }, process.env.SECRET, {
@@ -23,7 +29,7 @@ class AuthController {
 
 			res.status(200).json({ AccessToken: token })
 		} catch (e) {
-			return res.status(404).json(e.message)
+			return res.status(401).json({ message: e.message })
 		}
 	}
 
