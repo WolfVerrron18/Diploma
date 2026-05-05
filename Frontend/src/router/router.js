@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import MainLayout from '@/layouts/MainLayout.vue'
 import PageAuth from '@/components/pages/PageAuth.vue'
 import PagePurposes from '@/components/pages/PagePurposes.vue'
 import PageBankAccounts from '@/components/pages/PageBankAccounts.vue'
 import PageCategories from '@/components/pages/PageCategories.vue'
-import PageTransactions from '@/components/pages/PageTransactions.vue'
 import PageTODOList from '@/components/pages/PageTODOList.vue'
 import PageStatistics from '@/components/pages/PageStatistics.vue'
 import PageSettings from '@/components/pages/PageSettings.vue'
+import PageReflections from '@/components/pages/PageReflections.vue'
+import PageArtifacts from '@/components/pages/PageArtifacts.vue'
+import PageTags from '@/components/pages/PageTags.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +25,24 @@ const router = createRouter({
           path: '/notes',
           name: 'notes',
           component: PageTODOList,
+          meta: { private: true }
+        },
+        {
+          path: '/reflections',
+          name: 'reflections',
+          component: PageReflections,
+          meta: { private: true }
+        },
+        {
+          path: '/artifacts',
+          name: 'artifacts',
+          component: PageArtifacts,
+          meta: { private: true }
+        },
+        {
+          path: '/tags',
+          name: 'tags',
+          component: PageTags,
           meta: { private: true }
         },
         {
@@ -53,12 +74,6 @@ const router = createRouter({
           path: '/categories',
           name: 'categories',
           component: PageCategories,
-          meta: { private: true }
-        },
-        {
-          path: '/transactions',
-          name: 'transactions',
-          component: PageTransactions,
           meta: { private: true }
         }
       ]

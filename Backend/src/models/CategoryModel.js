@@ -15,4 +15,4 @@ const CategoryScheme = new mongoose.Schema({
 	priority: { type: Number },
 })
 
-export default mongoose.model('Category', CategoryScheme)
+export default mongoose.model('Categoryww', CategoryScheme)

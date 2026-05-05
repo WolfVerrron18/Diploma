@@ -1,331 +1,296 @@
 <template>
   <SystemModal
     :model-value="modelValue"
-    :width="400"
-    :height="400"
+    :width="460"
     :title="cardTitle[mode]"
+    :height="500"
     @on-hide-modal="onHideModal"
   >
-    <!-- Контент карточки -->
     <template #content>
-      <div class="note__wrapper" :class="{ 'note__wrapper-overlay': loading.card }">
-        <!-- Название -->
-        <SystemInput
-          v-model="category.name"
-          class="note__item"
-          label="Название"
-          @change:model-value="updateCategory"
-        />
+      <div class="note-edit-form" :class="{ 'is-loading': loading.card }">
+        <!-- Название и описание (без изменений) -->
+        <div class="form-group">
+          <label class="form-label">Название</label>
+          <el-input
+            v-model="category.name"
+            placeholder="О чем вы думаете?"
+            @change="updateCategory"
+          />
+        </div>
 
-        <!-- Описание -->
-        <SystemInput
-          v-model="category.description"
-          class="note__item"
-          style="width: 240px"
-          label="Описание"
-          type-field="textarea"
-          placeholder="Введите описание"
-          @change:model-value="updateCategory"
-        />
+        <div class="form-group">
+          <label class="form-label">Детали и мысли</label>
+          <el-input
+            v-model="category.description"
+            type="textarea"
+            :rows="3"
+            placeholder="Разверните вашу мысль здесь..."
+            @change="updateCategory"
+          />
+        </div>
 
-        <!-- Состояние -->
-        <SystemSelect
-          class="note__item"
-          v-model="category.type"
-          :options="types"
-          label="Состояние"
-          placeholder="Выберите состояние"
-          @update:model-value="updateCategory"
-        />
+        <!-- Состояние с динамическим цветом из rowStyleStates -->
+        <div class="form-group">
+          <label class="form-label">Состояние</label>
+          <el-segmented
+            v-model="category.type"
+            :options="statusOptions"
+            block
+            class="state-segmented"
+            :style="{ '--active-state-color': rowStyleStates[category.type] }"
+            @change="updateCategory"
+          >
+            <template #default="{ item }">
+              <div class="segmented-item">
+                <el-icon><component :is="item.icon" /></el-icon>
+                <span>{{ item.label }}</span>
+              </div>
+            </template>
+          </el-segmented>
+        </div>
 
-        <!-- Приоритет -->
-        <SystemSelect
-          class="note__item"
-          v-model="category.priority"
-          :options="priorities"
-          label="Приоритет"
-          placeholder="Выберите приоритет"
-          @update:model-value="updateCategory"
-        />
+        <!-- Приоритет с динамическим цветом из rowStylePriorities -->
+        <div class="form-group">
+          <label class="form-label">Важность (Приоритет)</label>
+          <el-segmented
+            v-model="category.priority"
+            :options="priorityOptions"
+            block
+            class="priority-segmented"
+            :style="{ '--active-priority-color': rowStylePriorities[category.priority] }"
+            @change="updateCategory"
+          />
+        </div>
 
-        <!-- Дата создания -->
-        <SystemDatePicker
-          v-if="isMode.edit"
-          v-model="category.dateCreation"
-          class="note__item"
-          label="Дата создания"
-          :disabled="isMode.edit"
-        />
+        <div v-if="isMode.edit" class="form-group date-info">
+          <el-icon><Calendar /></el-icon>
+          <span>Создано: {{ category.dateCreation?.split('T')[0] }}</span>
+        </div>
       </div>
     </template>
 
-    <!-- Кнопки карточки -->
+    <!-- Footer без изменений -->
     <template #footer>
-      <el-button v-if="isMode.create" @click="onHideModal"> Отмена </el-button>
-
-      <el-button
-        v-if="isMode.create"
-        type="primary"
-        :disabled="isContentChanged"
-        :loading="loading.button"
-        @click="createCategory"
-      >
-        Сохранить
-      </el-button>
-
-      <el-button v-if="isMode.edit" type="danger" :loading="loading.button" @click="removeCategory">
-        Удалить
-      </el-button>
+      <div class="modal-footer">
+        <el-button v-if="isMode.create" @click="onHideModal">Отмена</el-button>
+        <el-button
+          v-if="isMode.create"
+          type="primary"
+          round
+          :disabled="isContentChanged"
+          :loading="loading.button"
+          @click="createCategory"
+          >Зафиксировать</el-button
+        >
+        <el-button
+          v-if="isMode.edit"
+          type="danger"
+          plain
+          round
+          :loading="loading.button"
+          @click="removeCategory"
+          >Удалить запись</el-button
+        >
+      </div>
     </template>
   </SystemModal>
 </template>
 
-<script>
-import { computed, reactive, ref, watch } from 'vue'
-
-/** @module lodash - Библиотека вспомогательных функций */
+<script setup>
+import { computed, ref, reactive, watch } from 'vue'
 import { isEqual } from 'lodash'
+import { Check, Timer, IceTea, Calendar } from '@element-plus/icons-vue'
 
-/** @class CategoryModel - Базовый класс категории */
 import { CategoryModel } from '@/components/categories/card/model/CategoryModel.js'
-
-/** @class CategoryService - Сервис для работы с категориями */
 import CategoryService from '@/components/categories/service/CategoryService.js'
-
-/** @module Components - Системные компоненты */
-import SystemModal from '@/components/system/SystemModal.vue'
-import SystemInput from '@/components/system/SystemInput.vue'
-import SystemSelect from '@/components/system/SystemSelect.vue'
 import { enumPriorities, enumStatusNotes } from '@/components/notes/enums/enumNotes.js'
-import { noteLabels, priorityLabels } from '@/components/notes/data/NotesData.js'
-import SystemDatePicker from '@/components/system/SystemDatePicker.vue'
+import {
+  noteLabels,
+  priorityLabels,
+  rowStylePriorities,
+  rowStyleStates
+} from '@/components/notes/data/NotesData.js'
+import SystemModal from '@/components/system/SystemModal.vue'
 
-export default {
-  name: 'NoteCard',
+const props = defineProps({
+  id: { type: String, default: '' },
+  modelValue: { type: Boolean, default: false },
+  defaultData: { type: Object, default: () => ({}) },
+  mode: { type: String, default: 'edit' }
+})
 
-  components: { SystemDatePicker, SystemSelect, SystemInput, SystemModal },
+const emit = defineEmits([
+  'onHideModal',
+  'update:modelValue',
+  'onObjectCreated',
+  'onObjectUpdated',
+  'onObjectRemoved'
+])
 
-  props: {
-    /** @param {string} id - Идентификатор категории */
-    id: {
-      type: String,
-      default: ''
-    },
+const category = ref({})
+const model = ref({})
+const loading = reactive({ button: false, card: false })
 
-    /** @param {boolean} modelValue - Видимость карточки */
-    modelValue: {
-      type: Boolean,
-      default: false
-    },
+// Опции для статусов с иконками
+const statusOptions = [
+  { label: noteLabels[enumStatusNotes.completed], value: enumStatusNotes.completed, icon: Check },
+  { label: noteLabels[enumStatusNotes.inPlans], value: enumStatusNotes.inPlans, icon: Timer },
+  { label: noteLabels[enumStatusNotes.frozen], value: enumStatusNotes.frozen, icon: IceTea }
+]
 
-    /** @param {object} defaultData - Данные карточки по умолчанию */
-    defaultData: {
-      type: Object,
-      default: () => ({})
-    },
+// Опции для приоритетов
+const priorityOptions = [
+  { label: priorityLabels[enumPriorities.low], value: enumPriorities.low },
+  { label: priorityLabels[enumPriorities.middle], value: enumPriorities.middle },
+  { label: priorityLabels[enumPriorities.high], value: enumPriorities.high }
+]
 
-    /** @param {string} mode - Режим работы с карточкой */
-    mode: {
-      type: String,
-      default: 'edit',
-      validator(mode) {
-        return ['create', 'edit'].includes(mode)
-      }
-    }
-  },
+const isMode = computed(() => ({
+  create: props.mode === 'create',
+  edit: props.mode === 'edit'
+}))
 
-  emits: ['onHideModal', 'update:modelValue', 'onObjectCreated', 'onObjectUpdated'],
+const cardTitle = computed(() => ({
+  create: 'Новая мысль',
+  edit: 'Рефлексия над задачей'
+}))
 
-  setup(props, { emit }) {
-    const category = ref({})
-    const model = ref({})
+const isContentChanged = computed(() => isEqual(category.value, model.value))
 
-    const selectedCategory = ref('')
+// Методы API (create, update, remove, get) остаются такими же как в твоем коде,
+// просто убедись, что они вызываются правильно (см. мой предыдущий ответ)
+const getCategory = async () => {
+  loading.card = true
+  try {
+    const { data } = await CategoryService.categories.get(props.id)
+    category.value = data
+    model.value = { ...data }
+  } finally {
+    loading.card = false
+  }
+}
 
-    const loading = reactive({
-      button: false,
-      card: false
-    })
+const createCategory = async () => {
+  loading.button = true
+  try {
+    const { data } = await CategoryService.categories.create(category.value)
+    emit('onObjectCreated', data)
+  } finally {
+    loading.button = false
+  }
+}
 
-    const types = [
-      {
-        label: noteLabels[enumStatusNotes.completed],
-        value: enumStatusNotes.completed
-      },
-      {
-        label: noteLabels[enumStatusNotes.inPlans],
-        value: enumStatusNotes.inPlans
-      },
-      {
-        label: noteLabels[enumStatusNotes.frozen],
-        value: enumStatusNotes.frozen
-      }
-    ]
+const updateCategory = async () => {
+  if (isMode.value.create || !category.value._id) return
+  loading.card = true
+  try {
+    const { data } = await CategoryService.categories.update(category.value._id, category.value)
+    category.value = data
+    model.value = { ...data }
+    emit('onObjectUpdated', data)
+  } finally {
+    loading.card = false
+  }
+}
 
-    const priorities = [
-      {
-        label: priorityLabels[enumPriorities.low],
-        value: enumPriorities.low
-      },
-      {
-        label: priorityLabels[enumPriorities.middle],
-        value: enumPriorities.middle
-      },
-      {
-        label: priorityLabels[enumPriorities.high],
-        value: enumPriorities.high
-      }
-    ]
+const removeCategory = async () => {
+  loading.button = true
+  try {
+    await CategoryService.categories.remove(category.value._id)
+    emit('onObjectRemoved', category.value._id)
+  } finally {
+    loading.button = false
+  }
+}
 
-    /** @computed
-     * @name isMode - Определение режима с модальным окном */
-    const isMode = computed(() => ({
-      create: props.mode === 'create',
-      edit: props.mode === 'edit'
-    }))
+const onHideModal = () => emit('onHideModal')
 
-    /** @computed
-     * @name cardTitle - Заголовки модального окна */
-    const cardTitle = computed(() => ({
-      create: 'Создание задачи',
-      edit: `Задача: "${model.value.name}"`
-    }))
-
-    /** @computed
-     * @name isContentChanged - Изменился ли контент карточки */
-    const isContentChanged = computed(() => {
-      return isEqual(category.value, model.value)
-    })
-
-    /** @function
-     * @name createCategory - Создание категории */
-    const createCategory = async () => {
-      loading.button = true
-
-      try {
-        const { data } = await CategoryService.categories.create(category.value)
-
-        emit('onObjectCreated', data)
-      } finally {
-        loading.button = false
-      }
-    }
-
-    /** @function
-     * @name removeCategory - Удаление категории */
-    const removeCategory = async () => {
-      loading.button = true
-
-      try {
-        await CategoryService.categories.remove(category.value._id)
-
-        emit('onObjectRemoved', category.value._id)
-      } finally {
-        loading.button = false
-      }
-    }
-
-    /** @function
-     * @name updateCategory - Обновление категории */
-    const updateCategory = async () => {
-      if (isMode.value.create) return
-
-      loading.card = true
-
-      try {
-        const { data } = await CategoryService.categories.update(category.value._id, category.value)
-
-        category.value = data
-        model.value = { ...data }
-
-        emit('onObjectUpdated', data)
-      } finally {
-        loading.card = false
-      }
-    }
-
-    /** @function
-     * @name getCategory - Получение категории */
-    const getCategory = async () => {
-      loading.card = true
-
-      try {
-        const { data } = await CategoryService.categories.get(props.id)
-
-        category.value = data
-        model.value = { ...data }
-      } finally {
-        loading.card = false
-      }
-    }
-
-    /** @function
-     * @name onUpdateVisible - Обновление видимости модального окна */
-    const onUpdateVisible = () => emit('update:modelValue')
-
-    /** @function
-     * @name initCategory - Инициализация категории */
-    const initCategory = () => {
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val) {
       if (isMode.value.create) {
         category.value = new CategoryModel(props.defaultData)
         model.value = new CategoryModel(props.defaultData)
-      } else if (props.modelValue) {
+      } else {
         getCategory()
       }
     }
-
-    /** @function
-     * @name onHideModal - Закрытие модального окна */
-    const onHideModal = () => emit('onHideModal')
-
-    watch(
-      () => props.modelValue,
-      () => initCategory(),
-      { immediate: true }
-    )
-
-    return {
-      category,
-      loading,
-      priorities,
-      selectedCategory,
-      types,
-      isMode,
-      cardTitle,
-      isContentChanged,
-      removeCategory,
-      updateCategory,
-      onHideModal,
-      onUpdateVisible,
-      createCategory
-    }
-  }
-}
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped lang="scss">
-.note {
-  &__wrapper {
-    padding: 24px;
-    height: 100%;
-    overflow: auto;
-    position: relative;
+/* Общие стили для сегментов */
+:deep(.el-segmented) {
+  // Базовый фон сегмента (неактивные кнопки)
+  --el-segmented-bg-color: var(--el-fill-color-light);
 
-    &-overlay {
-      &::before {
-        content: '';
-        position: absolute;
-        background: white;
-        opacity: 0.4;
-        z-index: 999;
-        height: calc(100% - 48px);
-        width: calc(100% - 24px);
-      }
+  // Принудительно белый текст для активного элемента
+  .el-segmented__item.is-selected {
+    color: #fff !important;
+  }
+
+  // Фикс для темной темы: Element Plus в dark mode
+  // вешает свои цвета на индикатор (бегунок). Нам нужно его перехватить.
+  .el-segmented__item-selected {
+    opacity: 1 !important; // Чтобы цвет был насыщенным
+  }
+}
+
+/* Применяем цвет для Приоритета */
+.priority-segmented {
+  // Переопределяем переменную фона активного элемента Element Plus
+  --el-segmented-item-selected-bg-color: var(--active-priority-color) !important;
+
+  :deep(.el-segmented__item-selected) {
+    background-color: var(--active-priority-color) !important;
+  }
+}
+
+/* Применяем цвет для Состояния */
+.state-segmented {
+  // Переопределяем переменную фона активного элемента Element Plus
+  --el-segmented-item-selected-bg-color: var(--active-state-color) !important;
+
+  :deep(.el-segmented__item-selected) {
+    background-color: var(--active-state-color) !important;
+  }
+}
+
+/* Дополнительная стилизация для формы */
+.note-edit-form {
+  padding: 10px 20px;
+  .form-group {
+    margin-bottom: 20px;
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--el-text-color-secondary);
+      margin-bottom: 8px;
     }
   }
+}
 
-  &__item:not(:last-child) {
-    margin-bottom: 16px;
-  }
+.segmented-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--el-text-color-placeholder);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

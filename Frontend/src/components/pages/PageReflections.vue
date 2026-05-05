@@ -1,19 +1,19 @@
 <template>
-  <div class="page-notes">
+  <div class="page-reflections">
     <!-- Шапка страницы -->
-    <PageHeader title="Задачи" />
+    <PageHeader title="Размышления" />
 
-    <Notes class="page-notes__notes" />
+    <Reflections />
   </div>
 </template>
 
 <script setup>
-import Notes from '@/components/notes/Notes.vue'
 import PageHeader from '@/components/system/PageHeader.vue'
+import Reflections from '@/components/reflections/Reflections.vue'
 </script>
 
 <style scoped lang="scss">
-.page-interval {
+.page-reflections {
   overflow: hidden;
   height: 100%;
 

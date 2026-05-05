@@ -66,11 +66,22 @@ class CategoryController {
 	 * @name remove - Удаление категории */
 	async remove(req, res) {
 		try {
-			await CategoryService.categories.remove(req.params.id)
+			// 1. Дожидаемся удаления
+			const result = await CategoryService.categories.remove(req.params.id)
 
-			res.status(200)
+			// 2. Отправляем ответ!
+			// Без .json() или .send() запрос будет висеть до тайм-аута
+			res.status(200).json({
+				success: true,
+				message: 'Запись удалена',
+				id: req.params.id,
+			})
 		} catch (e) {
-			res.status(500).json(e)
+			// В случае ошибки тоже важно отправить JSON, чтобы фронт мог его прочитать
+			res.status(500).json({
+				message: 'Ошибка при удалении',
+				error: e.message,
+			})
 		}
 	}
 }

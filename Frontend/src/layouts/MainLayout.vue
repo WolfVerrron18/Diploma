@@ -82,9 +82,18 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import AuthService from '@/services/AuthService.js'
 import UserService from '@/services/UserService.js'
-import { useDark, useToggle } from '@vueuse/core' // Нужна библиотека @vueuse/core
-import { Star, Setting, Sort, Sunny, Moon } from '@element-plus/icons-vue'
-
+import { useDark } from '@vueuse/core' // Нужна библиотека @vueuse/core
+import {
+  Star,
+  Setting,
+  Sort,
+  Sunny,
+  Moon,
+  Tickets,
+  PieChart,
+  Edit,
+  Collection
+} from '@element-plus/icons-vue'
 const router = useRouter()
 const route = useRoute()
 const store = useUserStore()
@@ -92,23 +101,31 @@ const isCollapse = ref(false)
 
 // 1. Инициализируем темную тему
 const isDark = useDark({
-  initialValue: 'light',
-  storageKey: 'vueuse-color-scheme',
+  selector: 'html', // Явно указываем, куда вешать класс
+  attribute: 'class',
   valueDark: 'dark',
-  valueLight: 'light'
+  valueLight: ''
 })
-
-const rawToggleDark = useToggle(isDark)
 
 const pages = [
   {
-    name: 'notes',
-    icon: 'Tickets',
-    title: 'TO DO лист'
+    name: 'reflections', // Имя маршрута для заметок
+    icon: Edit,
+    title: 'Размышления'
+  },
+  {
+    name: 'artifacts', // Имя маршрута для артефактов
+    icon: Tickets,
+    title: 'Артефакты'
+  },
+  {
+    name: 'tags',
+    icon: Collection,
+    title: 'Теги'
   },
   {
     name: 'statistics',
-    icon: 'PieChart',
+    icon: PieChart,
     title: 'Статистика'
   }
 ]
@@ -139,8 +156,8 @@ const currentDate = computed(() => {
 
 // --- Методы ---
 // Метод сохранения настроек
-const toggleDark = async () => {
-  rawToggleDark() // Сначала меняем визуально для скорости (UX)
+const toggleDark = async (e) => {
+  console.log(e)
 
   try {
     // Подготавливаем данные для бекенда
@@ -167,8 +184,14 @@ const onPushRoute = async (index) => {
 const logout = async () => {
   try {
     await AuthService.auth.logout()
+
+    // Сброс темы и стилей
+    isDark.value = false
+    document.documentElement.removeAttribute('style')
+
     localStorage.clear()
     store.setUser({})
+
     await router.push({ name: 'auth' })
   } catch (error) {
     console.error('Ошибка при выходе:', error)

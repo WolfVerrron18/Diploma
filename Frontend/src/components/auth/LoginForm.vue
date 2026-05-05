@@ -81,7 +81,7 @@ const moodOptions = [
 const formBody = reactive({
   login: '',
   password: '',
-  mood: 'default' // Устанавливаем дефолт здесь
+  mood: '' // Устанавливаем дефолт здесь
 })
 
 // Правила валидации — обязательный пункт для ElForm

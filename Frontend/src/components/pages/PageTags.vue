@@ -1,19 +1,19 @@
 <template>
-  <div class="page-notes">
+  <div class="page-artifacts">
     <!-- Шапка страницы -->
-    <PageHeader title="Задачи" />
+    <PageHeader title="Теги" />
 
-    <Notes class="page-notes__notes" />
+    <TagsList />
   </div>
 </template>
 
 <script setup>
-import Notes from '@/components/notes/Notes.vue'
 import PageHeader from '@/components/system/PageHeader.vue'
+import TagsList from '@/components/tags/TagsList.vue'
 </script>
 
 <style scoped lang="scss">
-.page-interval {
+.page-artifacts {
   overflow: hidden;
   height: 100%;
 
