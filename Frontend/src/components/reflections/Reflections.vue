@@ -2,12 +2,11 @@
   <div class="reflections-container">
     <!-- Кнопка создания в хедере -->
     <Teleport v-if="isMounted" to=".page-header">
-      <el-button type="warning" size="large" round icon="Edit" @click="openReflectionInCreateMode">
+      <el-button type="primary" round :icon="Edit" @click="openReflectionInCreateMode">
         Записать мысль
       </el-button>
     </Teleport>
 
-    <!-- Модалка теперь принимает режим и данные -->
     <ReflectionCard
       v-model="reflection.visibility"
       :mode="reflection.cardMode"
@@ -19,62 +18,52 @@
 
     <div class="reflections-header">
       <div class="title-section">
-        <h2 class="page-title">Поток мыслей</h2>
-        <p class="page-subtitle">Ваши идеи, рефлексия и важные заметки</p>
+        <p class="page-subtitle">Ваши идеи и заметки</p>
       </div>
     </div>
 
-    <!-- Загрузка -->
-    <div v-if="loading" class="loading-grid">
-      <el-skeleton v-for="n in 6" :key="n" :rows="4" animated class="skeleton-card" />
-    </div>
+    <!-- Обертка со скроллом -->
+    <div class="scrollable-content">
+      <div v-if="loading" class="reflections-grid">
+        <el-skeleton v-for="n in 12" :key="n" animated class="skeleton-compact" />
+      </div>
 
-    <!-- Сетка из API -->
-    <div v-else class="reflections-grid">
-      <div
-        v-for="note in notes"
-        :key="note._id"
-        class="reflection-card"
-        @click="openEditModal(note)"
-      >
-        <div class="card-inner">
-          <div class="card-top">
-            <span class="type-icon">{{ getNoteIcon(note.type) }}</span>
-          </div>
+      <div v-else class="reflections-grid">
+        <div
+          v-for="note in notes"
+          :key="note._id"
+          class="reflection-card"
+          @click="openEditModal(note)"
+        >
+          <div class="type-accent" :class="note.type"></div>
 
-          <div class="card-main">
-            <h3 class="note-title">{{ note.title || 'Без названия' }}</h3>
+          <div class="card-inner">
+            <div class="card-top">
+              <h3 class="note-title">{{ note.title || 'Без названия' }}</h3>
+              <el-icon class="type-icon" :class="note.type">
+                <component :is="getNoteIcon(note.type)" />
+              </el-icon>
+            </div>
+
             <p class="note-content">{{ note.content }}</p>
-          </div>
 
-          <div class="card-bottom">
-            <div class="note-info">
+            <div class="card-meta">
               <span class="note-date">{{ formatDate(note.updatedAt) }}</span>
-              <el-tag size="small" effect="light" type="warning" class="type-tag">
-                {{ getTypeName(note.type) }}
-              </el-tag>
+              <span class="type-label" :class="note.type">{{ getTypeName(note.type) }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <el-empty
-      v-if="!loading && notes.length === 0"
-      description="Тишина... Время что-нибудь записать."
-    >
-      <el-button type="warning" plain @click="openReflectionInCreateMode">
-        Создать первую заметку
-      </el-button>
-    </el-empty>
+      <el-empty v-if="!loading && notes.length === 0" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { StarFilled, Edit } from '@element-plus/icons-vue'
+import { Edit, Opportunity, Document, ChatLineRound } from '@element-plus/icons-vue'
 import ReflectionCard from '@/components/reflections/card/ReflectionCard.vue'
-// Импортируем наш сервис
 import ReflectionService from '@/components/reflections/service/ReflectionService.js'
 
 const notes = ref([])
@@ -87,45 +76,34 @@ const reflection = reactive({
   activeRow: {}
 })
 
-/**
- * Получение данных с бэкенда через сервис
- */
 const fetchNotes = async () => {
   loading.value = true
   try {
     const response = await ReflectionService.reflections.list()
-    // Предполагаем, что http.js возвращает данные в свойстве data
     notes.value = response.data || []
   } catch (e) {
-    console.error('Ошибка при получении заметок:', e)
+    console.error('Ошибка:', e)
   } finally {
     loading.value = false
   }
 }
 
-// Открытие модалки для создания
 const openReflectionInCreateMode = () => {
-  reflection.activeRow = {
-    title: '',
-    content: '',
-    type: 'idea',
-    importance: 1
-  }
+  reflection.activeRow = { title: '', content: '', type: 'idea', importance: 1 }
   reflection.cardMode = 'create'
   reflection.visibility = true
 }
 
-// Открытие модалки для редактирования
 const openEditModal = (note) => {
-  reflection.activeRow = { ...note } // Копируем объект, чтобы не мутировать список напрямую
+  reflection.activeRow = { ...note }
   reflection.cardMode = 'edit'
   reflection.visibility = true
 }
 
-// Хелперы (остаются без изменений)
+// Иконки теперь системные
 const getNoteIcon = (type) => {
-  const icons = { idea: '💡', memo: '📝', mind: '🧠' }
-  return icons[type] || '✨'
+  const icons = { idea: Opportunity, memo: Document, mind: ChatLineRound }
+  return icons[type] || Document
 }
 
 const getTypeName = (type) => {
@@ -146,142 +124,165 @@ onMounted(() => {
   isMounted.value = true
 })
 </script>
+
 <style scoped lang="scss">
 .reflections-container {
-  padding: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 20px;
+  max-width: 1400px;
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
 }
 
 .reflections-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
+  flex-shrink: 0; // Чтобы хедер не сжимался
 
   .page-title {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 1.5rem;
+    font-weight: 700;
     margin: 0;
-    color: var(--el-text-color-primary);
   }
-
   .page-subtitle {
-    margin: 8px 0 0 0;
-    color: var(--el-text-color-secondary);
     font-size: 1rem;
+    color: var(--el-text-color-secondary);
+  }
+}
+
+/* Область скролла */
+.scrollable-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 8px; // Отступ для скроллбара
+  padding-bottom: 20px;
+
+  /* Стилизация скроллбара под Element Plus */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--el-border-color-darker);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--el-text-color-placeholder);
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
 .reflections-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  align-items: start; // Чтобы карточки разной наполненности не растягивались странно
 }
 
 .reflection-card {
-  height: 220px;
-  background: var(--el-bg-color-overlay);
-  border-radius: 20px;
-  border: 1px solid var(--el-border-color-lighter);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
   position: relative;
+  background: var(--el-bg-color-overlay);
+  border-radius: 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  min-height: 140px;
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    border-color: var(--el-color-warning-light-5);
+    border-color: var(--el-color-primary-light-3);
+    transform: translateY(-2px);
+    box-shadow: var(--el-box-shadow-lighter);
   }
 
-  // Декоративный элемент "загнутый уголок" или акцент
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 30px;
-    height: 30px;
-    background: linear-gradient(225deg, var(--el-color-warning-light-8) 50%, transparent 50%);
-    opacity: 0.5;
+  .type-accent {
+    height: 3px;
+    width: 100%;
+    &.idea {
+      background: var(--el-color-warning);
+    }
+    &.memo {
+      background: var(--el-color-info);
+    }
+    &.mind {
+      background: var(--el-color-primary);
+    }
   }
 
   .card-inner {
-    padding: 24px;
-    height: 100%;
+    padding: 16px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
   }
 
   .card-top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 16px;
-
-    .type-icon {
-      font-size: 1.4rem;
-    }
-  }
-
-  .card-main {
-    flex-grow: 1;
-
+    gap: 8px;
     .note-title {
-      margin: 0 0 10px 0;
-      font-size: 1.15rem;
-      font-weight: 700;
-      font-style: italic; // Тот самый стиль "размышления"
-      font-family: 'Georgia', serif;
-      color: var(--el-text-color-primary);
-    }
-
-    .note-content {
       margin: 0;
       font-size: 0.95rem;
-      line-height: 1.5;
-      color: var(--el-text-color-regular);
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+    .type-icon {
+      font-size: 1rem;
+      opacity: 0.6;
+      &.idea {
+        color: var(--el-color-warning);
+      }
+      &.memo {
+        color: var(--el-color-info);
+      }
+      &.mind {
+        color: var(--el-color-primary);
+      }
     }
   }
 
-  .card-bottom {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px dashed var(--el-border-color-lighter);
+  .note-content {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--el-text-color-regular);
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
-    .note-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  .card-meta {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--el-border-color-extra-light);
+    padding-top: 8px;
 
-      .note-date {
-        font-size: 0.8rem;
-        color: var(--el-text-color-placeholder);
+    .note-date {
+      font-size: 0.7rem;
+      color: var(--el-text-color-placeholder);
+    }
+    .type-label {
+      font-size: 12px;
+      &.idea {
+        color: var(--el-color-warning);
       }
-
-      .type-tag {
-        border-radius: 12px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+      &.memo {
+        color: var(--el-color-info);
+      }
+      &.mind {
+        color: var(--el-color-primary);
       }
     }
   }
 }
 
-.loading-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-
-  .skeleton-card {
-    padding: 20px;
-    background: var(--el-bg-color-overlay);
-    border-radius: 20px;
-    height: 220px;
-  }
+.skeleton-compact {
+  height: 160px;
+  border-radius: 12px;
 }
 </style>

@@ -37,6 +37,14 @@ CategorySchema.virtual('tags', {
 	foreignField: 'categoryId', // Поле в модели тега, где хранится ID категории
 })
 
+CategorySchema.virtual('tagsWithColor').get(function () {
+	if (!this.tags) return []
+	return this.tags.map((tag) => ({
+		...tag.toObject(),
+		color: this.color, // Примешиваем цвет категории прямо в объект тега
+	}))
+})
+
 // Обязательно включаем виртуальные поля при конвертации в JSON
 CategorySchema.set('toObject', { virtuals: true })
 CategorySchema.set('toJSON', { virtuals: true })

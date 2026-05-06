@@ -15,7 +15,9 @@
       <!-- Шапка -->
       <div class="modal__header">
         <!-- Заголовок -->
-        <h3 :id="titleId" :class="titleClass">{{ title }}</h3>
+        <h3 :id="titleId" :class="titleClass">
+          <slot name="title"> {{ title }}</slot>
+        </h3>
 
         <!-- Контролы -->
         <div class="modal__controls">

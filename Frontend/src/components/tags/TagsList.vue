@@ -27,20 +27,11 @@
           <div class="category-info">
             <span class="category-name">{{ cat.name }}</span>
           </div>
-          <el-tag size="small" type="info">
-            {{ cat.tagsCount ?? cat.tags?.length ?? 0 }}
-          </el-tag>
         </div>
       </div>
 
       <div class="sidebar-footer">
-        <el-button
-          type="primary"
-          class="w-100"
-          @click="enterCreateMode"
-          :disabled="isCreateMode"
-          icon="Plus"
-        >
+        <el-button type="primary" class="w-100" @click="enterCreateMode" icon="Plus">
           Новая категория
         </el-button>
       </div>
@@ -93,22 +84,30 @@
           </div>
 
           <div class="tags-flex">
-            <div v-for="tag in selectedCategory.tags" :key="tag._id" class="themed-tag">
-              <input
-                v-model="tag.label"
-                @change="handleUpdateTag(tag)"
-                class="tag-edit-input"
-                :style="{ width: tag.label.length + 1 + 'ch' }"
-              />
-              <el-icon class="tag-del-icon" @click="handleRemoveTag(tag._id)">
-                <Close />
-              </el-icon>
-            </div>
+            <el-tag
+              v-for="tag in selectedCategory.tags"
+              :key="tag._id"
+              size="default"
+              closable
+              round
+              effect="dark"
+              :color="selectedCategory.color"
+              @close="handleRemoveTag(tag._id)"
+              :style="{
+                '--el-tag-bg-color': selectedCategory.color,
+                '--el-tag-border-color': selectedCategory.color,
+                'background-color': selectedCategory.color,
+                'border-color': selectedCategory.color
+              }"
+            >
+              {{ tag.label }}
+            </el-tag>
 
             <div class="tag-adder">
               <el-input
                 v-model="newTagName"
                 placeholder="+ Тег"
+                size="default"
                 @keyup.enter="handleConfirmAddTag"
                 @blur="handleConfirmAddTag"
                 class="compact-adder"
@@ -119,7 +118,13 @@
 
         <footer class="form-footer">
           <div class="footer-left">
-            <el-button v-if="!isCreateMode" type="danger" link @click="handleDeleteCategory">
+            <el-button
+              v-if="!isCreateMode"
+              type="danger"
+              plain
+              :icon="Delete"
+              @click="handleDeleteCategory"
+            >
               Удалить категорию
             </el-button>
             <el-button v-else @click="cancelCreate" link>Отмена</el-button>
@@ -127,7 +132,6 @@
 
           <el-button
             type="primary"
-            size="large"
             @click="isCreateMode ? handleConfirmCreate() : handleSaveCategory()"
             :loading="categoryActionLoading"
           >
@@ -146,7 +150,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Collection, Close, Plus, Search } from '@element-plus/icons-vue'
+import { Collection, Close, Delete } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import TagService from '@/components/tags/service/TagService.js'
 
@@ -185,6 +189,8 @@ const filteredCategories = computed(() => {
 })
 
 const enterCreateMode = () => {
+  if (isCreateMode.value) return
+
   isCreateMode.value = true
   selectedCategory.value = { name: '', color: '#409EFF', description: '', tags: [] }
 }
@@ -347,6 +353,7 @@ const handleDeleteCategory = async () => {
   width: 4px;
   height: 20px;
   background-color: var(--cat-color);
+  border-color: var(--cat-color);
   border-radius: 0 4px 4px 0;
 }
 
@@ -357,15 +364,14 @@ const handleDeleteCategory = async () => {
 
 /* MAIN CONTENT (Единственное место со скроллом справа) */
 .main-content {
-  flex: 1;
+  width: 100%;
   padding: 40px 60px;
   overflow-y: auto; /* Весь контент справа скроллится здесь */
-  height: 100vh;
+  height: calc(100% - 140px);
 }
 
 .editor-container {
   width: 100%;
-  padding-bottom: 100px; /* Чтобы футер не прилипал к краю при скролле */
 }
 
 .mode-badge {
@@ -426,44 +432,8 @@ const handleDeleteCategory = async () => {
   align-items: center;
 }
 
-.themed-tag {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  border-radius: 100px; /* Более мягкая форма */
-  background-color: var(--active-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s;
-}
-
-.tag-edit-input {
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  min-width: 3ch; /* Чтобы не схлопывался совсем */
-  max-width: 300px;
-}
-
-.tag-del-icon {
-  margin-left: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  font-size: 14px;
-}
-.tag-del-icon:hover {
-  color: #fff;
-  transform: scale(1.2);
-}
-
 .tag-adder {
   min-width: 120px;
-}
-
-.compact-adder :deep(.el-input__wrapper) {
-  border-radius: 100px;
 }
 
 /* FOOTER */
@@ -487,5 +457,32 @@ const handleDeleteCategory = async () => {
 
 .w-100 {
   width: 100%;
+}
+
+/* Контейнер для тегов */
+.tags-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Внутренний инпут внутри тега */
+.tag-inner-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff; /* Текст внутри темного тега */
+  min-width: 3ch;
+  max-width: 250px;
+  padding: 0;
+  cursor: text;
+}
+
+/* Стили для поля добавления */
+.tag-adder {
+  min-width: 120px;
 }
 </style>

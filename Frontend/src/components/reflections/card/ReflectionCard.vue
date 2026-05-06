@@ -2,74 +2,70 @@
   <SystemModal
     :model-value="modelValue"
     :width="520"
-    :height="500"
-    :title="cardTitle"
-    custom-class="reflection-modern-modal"
+    :height="620"
+    custom-class="reflection-modal"
     @on-hide-modal="onHideModal"
   >
+    <template #title>
+      <span>{{ cardTitle }}</span>
+      <div v-if="mode === 'edit'" class="info-side">
+        <span v-if="note.updatedAt" class="timestamp">
+          <el-icon><Calendar /></el-icon>
+          {{ formatFullDate(note.updatedAt) }}
+        </span>
+      </div>
+    </template>
+
     <template #content>
       <div
         v-loading="loading.card"
-        class="reflection-container"
-        element-loading-background="rgba(24, 24, 24, 0.8)"
+        class="reflection-body"
+        element-loading-background="rgba(0, 0, 0, 0.7)"
       >
-        <!-- Мета-данные (Type) -->
-        <div class="reflection-meta">
-          <el-segmented
-            v-model="note.type"
-            :options="noteTypes"
-            size="default"
-            class="modern-segmented"
-          />
+        <div class="meta-section">
+          <el-segmented v-model="note.type" :options="noteTypes" block class="custom-segmented">
+            <template #default="{ item }">
+              <div class="segmented-item">
+                <el-icon><component :is="item.icon" /></el-icon>
+                <span>{{ item.label }}</span>
+              </div>
+            </template>
+          </el-segmented>
         </div>
 
-        <div class="reflection-paper">
-          <!-- Title (String, default: '') -->
-          <input v-model="note.title" class="title-input" placeholder="Озаглавьте вашу мысль..." />
+        <div class="editor-section">
+          <el-input
+            v-model="note.title"
+            placeholder="Заголовок (необязательно)"
+            maxlength="100"
+            class="title-field"
+          />
 
-          <!-- Content (Required, Trim) -->
           <el-input
             v-model="note.content"
             type="textarea"
-            :autosize="{ minRows: 8, maxRows: 15 }"
-            placeholder="Начните писать здесь..."
+            :autosize="{ minRows: 8, maxRows: 12 }"
+            placeholder="Начните писать свою мысль..."
             resize="none"
-            class="content-textarea"
           />
         </div>
       </div>
     </template>
 
     <template #footer>
-      <div class="modern-footer">
-        <div class="meta-info">
-          <!-- Используем updatedAt из timestamps схемы -->
-          <span v-if="note.updatedAt" class="date-chip">
-            <el-icon><Calendar /></el-icon>
-            {{ formatFullDate(note.updatedAt) }}
-          </span>
-        </div>
-        <div class="footer-actions">
-          <el-button
-            v-if="mode === 'edit'"
-            type="danger"
-            link
-            :icon="Delete"
-            :loading="loading.delete"
-            @click="handleDelete"
-          >
-            Удалить
-          </el-button>
-          <el-button
-            type="primary"
-            round
-            class="save-btn"
-            :loading="loading.card"
-            @click="handleSave"
-          >
-            {{ mode === 'create' ? 'Создать' : 'Сохранить' }}
-          </el-button>
-        </div>
+      <div class="modal-footer">
+        <el-button
+          v-if="mode === 'edit'"
+          type="danger"
+          plain
+          :loading="loading.delete"
+          @click="handleDelete"
+        >
+          Удалить
+        </el-button>
+        <el-button type="primary" class="save-btn" :loading="loading.card" @click="handleSave">
+          {{ mode === 'create' ? 'Создать' : 'Сохранить' }}
+        </el-button>
       </div>
     </template>
   </SystemModal>
@@ -77,7 +73,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import { Delete, Calendar } from '@element-plus/icons-vue'
+import { Calendar, ChatLineRound, Opportunity, Document } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import SystemModal from '@/components/system/SystemModal.vue'
 import ReflectionService from '@/components/reflections/service/ReflectionService.js'
@@ -90,13 +86,11 @@ const props = defineProps({
 
 const emit = defineEmits(['onHideModal', 'onObjectCreated', 'onObjectUpdated'])
 
-// Инициализация объекта строго по схеме Mongoose
 const note = ref({
   title: '',
   content: '',
   type: 'idea',
   importance: 1
-  // userId добавится на бэкенде или при создании, если нужно на фронте
 })
 
 const loading = reactive({
@@ -104,44 +98,33 @@ const loading = reactive({
   delete: false
 })
 
-// Соответствие enum: ['idea', 'memo', 'mind']
 const noteTypes = [
-  { label: '💡 Идея', value: 'idea' },
-  { label: '📝 Заметка', value: 'memo' },
-  { label: '🧠 Рефлексия', value: 'mind' }
+  { label: 'Идея', value: 'idea', icon: Opportunity },
+  { label: 'Заметка', value: 'memo', icon: Document },
+  { label: 'Рефлексия', value: 'mind', icon: ChatLineRound }
 ]
 
-const cardTitle = computed(() => (props.mode === 'create' ? 'Новое размышление' : 'Поток мыслей'))
-
-const formatFullDate = (date) => {
-  return new Date(date).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
+const cardTitle = computed(() => (props.mode === 'create' ? 'Новая запись' : 'Редактирование'))
 
 const handleSave = async () => {
   if (!note.value.content?.trim()) {
-    return ElMessage.warning('Контент заметки не может быть пустым')
+    return ElMessage.warning('Поле контента не может быть пустым')
   }
 
   loading.card = true
   try {
     if (props.mode === 'create') {
-      // При создании отправляем объект. Бэкенд сам привяжет userId из сессии
       await ReflectionService.reflections.create(note.value)
-      ElMessage.success('Мысль успешно записана')
+      ElMessage.success('Записано')
       emit('onObjectCreated')
     } else {
-      // При обновлении используем _id из MongoDB
       await ReflectionService.reflections.update(note.value._id, note.value)
-      ElMessage.success('Запись обновлена')
+      ElMessage.success('Обновлено')
       emit('onObjectUpdated')
     }
     onHideModal()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Ошибка сохранения')
+    ElMessage.error(e.response?.data?.message || 'Ошибка при сохранении')
   } finally {
     loading.card = false
   }
@@ -149,23 +132,30 @@ const handleSave = async () => {
 
 const handleDelete = async () => {
   try {
-    await ElMessageBox.confirm('Удалить эту рефлексию безвозвратно?', 'Внимание', {
+    await ElMessageBox.confirm('Удалить эту запись?', 'Подтверждение', {
       confirmButtonText: 'Удалить',
       cancelButtonText: 'Отмена',
-      type: 'warning',
-      round: true
+      type: 'warning'
     })
 
     loading.delete = true
     await ReflectionService.reflections.remove(note.value._id)
-    ElMessage.success('Запись удалена')
+    ElMessage.success('Удалено')
     emit('onObjectUpdated')
     onHideModal()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error('Не удалось удалить запись')
+    if (e !== 'cancel') ElMessage.error('Ошибка при удалении')
   } finally {
     loading.delete = false
   }
+}
+
+const formatFullDate = (date) => {
+  return new Date(date).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  })
 }
 
 const onHideModal = () => emit('onHideModal')
@@ -175,16 +165,9 @@ watch(
   (val) => {
     if (val) {
       if (props.mode === 'edit' && props.defaultData) {
-        // Клонируем данные из БД (включая _id, updatedAt, type и т.д.)
-        note.value = { ...props.defaultData }
+        note.value = { ...props.defaultData, tags: props.defaultData.tags || [] }
       } else {
-        // Сброс к дефолтным значениям схемы при создании
-        note.value = {
-          title: '',
-          content: '',
-          type: 'idea',
-          importance: 1
-        }
+        note.value = { title: '', content: '', type: 'idea', importance: 1, tags: [] }
       }
     }
   },
@@ -193,130 +176,109 @@ watch(
 </script>
 
 <style scoped lang="scss">
-.reflection-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 10px 15px;
-}
-
-/* Панель мета-данных */
-.reflection-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px dashed var(--el-border-color-darker);
-}
-
-.modern-segmented {
-  background: transparent !important;
-  --el-segmented-bg-color: rgba(255, 255, 255, 0.05);
-  --el-segmented-item-selected-bg-color: var(--el-color-warning);
-  --el-segmented-item-selected-color: #000;
-
-  :deep(.el-segmented__item) {
-    border-radius: 12px;
-    margin: 0 2px;
-    font-weight: 600;
-  }
-}
-
-/* Стилизация бумаги/ввода */
-.reflection-paper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  .title-input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 1.6rem;
-    font-weight: 700;
-    font-family: 'Georgia', serif;
-    font-style: italic;
-    color: var(--el-color-warning-light-3);
-
-    &::placeholder {
-      opacity: 0.3;
-    }
-  }
-
-  :deep(.content-textarea) {
-    .el-textarea__inner {
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      font-size: 1.15rem;
-      line-height: 1.7;
-      color: var(--el-text-color-regular);
-      font-family: 'Georgia', serif;
-
-      &::placeholder {
-        font-style: italic;
-        opacity: 0.4;
-      }
-    }
-  }
-}
-
-/* Футер */
-.modern-footer {
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding-top: 10px;
+  padding-right: 30px;
+}
 
-  .date-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: var(--el-text-color-placeholder);
-    background: rgba(255, 255, 255, 0.03);
-    padding: 4px 10px;
-    border-radius: 8px;
+.reflection-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px;
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  .title-field {
+    :deep(.el-input__wrapper) {
+      box-shadow: none !important;
+      padding: 0;
+      background: transparent;
+    }
+    :deep(.el-input__inner) {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
   }
+  :deep(.el-textarea__inner) {
+    box-shadow: none !important;
+    padding: 0;
+    background: transparent;
+    font-size: 1rem;
+  }
+}
 
-  .footer-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+.minimal-tag {
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  color: #fff !important;
+}
+
+.tag-selector {
+  width: 110px;
+  :deep(.el-select__wrapper) {
+    background: transparent;
+    border: 1px dashed var(--el-border-color);
+    border-radius: 12px;
+    box-shadow: none !important;
+  }
+  :deep(.el-select__selection) {
+    display: none;
+  } // Скрываем выбранные внутри селектора
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .check-icon {
+    margin-left: auto;
+    color: var(--el-color-primary);
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 10px 0;
+
+  .delete-btn {
+    color: #f56c6c;
+    &:hover {
+      color: #fab6b6;
+    }
   }
 
   .save-btn {
+    background-color: #6a89cc;
+    border: none;
+    border-radius: 8px;
     padding: 10px 25px;
-    font-weight: 700;
-    background: var(--el-color-warning);
-    border-color: var(--el-color-warning);
-    color: #000;
-
     &:hover {
-      transform: scale(1.02);
-      background: var(--el-color-warning-light-3);
+      background-color: #4a69bd;
     }
   }
 }
 
-/* Переопределение стилей модалки для темной темы */
-:deep(.reflection-modern-modal) {
-  border-radius: 24px;
-  background-color: #181818 !important; // Глубокий темный
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
-  .el-dialog__header {
-    margin-right: 0;
-    padding-bottom: 10px;
-    .el-dialog__title {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      opacity: 0.5;
-    }
-  }
+.info-side .timestamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 </style>

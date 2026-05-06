@@ -1,7 +1,6 @@
 /** @module TagService - Сервис управления справочником тегов и категорий */
 import Category from '../models/tags/CategoryTags.js'
 import Tag from '../models/tags/Tag.js'
-import logger from '../logger/logger.js'
 
 class TagService {
 	/**

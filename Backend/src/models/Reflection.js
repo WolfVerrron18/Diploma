@@ -2,65 +2,60 @@ import mongoose from 'mongoose'
 
 const reflectionSchema = new mongoose.Schema(
 	{
-		// Привязка к пользователю
 		userId: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true,
-			index: true, // Индекс для быстрого поиска заметок конкретного юзера
+			index: true,
 		},
-
-		// Заголовок мысли (на скриншоте: "dqwd dwd")
 		title: {
 			type: String,
 			trim: true,
 			maxlength: 200,
 			default: '',
 		},
-
-		// Основной текст рефлексии
 		content: {
 			type: String,
 			required: [true, 'Контент заметки не может быть пустым'],
 			trim: true,
 		},
-
-		// Тип записи (выбор из Segmented Control: Идея, Заметка, Рефлексия)
 		type: {
 			type: String,
 			enum: ['idea', 'memo', 'mind'],
 			default: 'idea',
 			lowercase: true,
 		},
-
-		// Важность/Интенсивность (звезды в интерфейсе 1-3)
 		importance: {
 			type: Number,
 			min: 1,
 			max: 3,
 			default: 1,
 		},
-
-		// Метаданные для аналитики (опционально)
 		moodScore: {
-			type: Number, // Можно добавить скрытый расчет "настроения" текста в будущем
+			type: Number,
 			min: 1,
 			max: 5,
 		},
+		// Флаг мягкого удаления / скрытия записи
+		isDisabled: {
+			type: Boolean,
+			default: false, // Теперь при создании всегда будет false, если не передано иное
+		},
 	},
 	{
-		// Автоматически создает createdAt и updatedAt
-		// На скриншоте мы видим "4 мая" — это будет браться из createdAt/updatedAt
 		timestamps: true,
 	},
 )
 
-// Виртуальное поле для красивого формата даты (если не хочешь форматировать на фронте)
 reflectionSchema.virtual('formattedDate').get(function () {
 	return this.updatedAt.toLocaleDateString('ru-RU', {
 		day: 'numeric',
 		month: 'long',
 	})
 })
+
+// Настройка для того, чтобы виртуальные поля отображались при выводе в JSON
+reflectionSchema.set('toJSON', { virtuals: true })
+reflectionSchema.set('toObject', { virtuals: true })
 
 export default mongoose.model('Reflection', reflectionSchema)

@@ -21,6 +21,7 @@ import CategoryRouter from './src/router/CategoryRouter.js'
 import TransactionRouter from './src/router/TransactionRouter.js'
 import ReflectionRouter from './src/router/ReflectionRouter.js'
 import TagsRouter from './src/router/TagsRouter.js'
+import ArtifactRouter from './src/router/ArtifactRouter.js'
 
 const app = express()
 
@@ -36,6 +37,7 @@ app.use('/api', BankAccountRouter)
 app.use('/api', TransactionRouter)
 app.use('/api', ReflectionRouter)
 app.use('/api', TagsRouter)
+app.use('/api', ArtifactRouter)
 
 connectionDatabase()
 	.then(() => {

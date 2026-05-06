@@ -1,134 +1,183 @@
 <template>
-  <el-dialog
-    :model-value="modelValue"
-    :width="600"
-    :show-close="false"
-    draggable
-    class="artifact-modern-modal"
-    @close="onHideModal"
-  >
-    <!-- Шапка: теперь только с названием, без статуса. Служит ручкой для Drag & Drop -->
-    <template #header>
-      <div class="flex items-center w-full px-2 cursor-move">
-        <span class="text-[10px] uppercase tracking-[0.3em] text-amber-500/60 font-bold">
-          Crystallized Artifact // v.1.0
+  <SystemModal :model-value="modelValue" :width="550" :height="600" @on-hide-modal="onHideModal">
+    <template #title>
+      <span>{{ cardTitle }}</span>
+      <div class="info-side">
+        <span v-if="artifact.createdAt" class="timestamp">
+          <el-icon><Calendar /></el-icon>
+          {{ formatFullDate(artifact.createdAt) }}
         </span>
       </div>
     </template>
 
-    <div class="artifact-content-wrapper px-2 py-4">
-      <!-- Блок заголовка и важности -->
-      <div class="mb-8 space-y-4">
-        <div class="flex justify-between items-start gap-4">
-          <input
-            v-model="artifact.title"
-            class="bg-transparent border-none outline-none text-3xl font-serif italic text-amber-50 w-full placeholder:opacity-20"
-            placeholder="Назовите артефакт..."
-          />
-          <div class="pt-2">
+    <template #content>
+      <div v-loading="loading" class="minimal-body">
+        <div class="top-nav">
+          <!-- Режим создания: Показываем селект -->
+          <el-select
+            v-if="mode === 'create'"
+            v-model="artifact.reflectionId"
+            placeholder="Выберите источник..."
+            variant="none"
+            class="source-selector"
+            @change="handleSourceChange"
+          >
+            <el-option
+              v-for="item in reflections"
+              :key="item._id"
+              :label="item.title || 'Без названия'"
+              :value="item._id"
+            >
+              <div class="option-content">
+                <span class="option-title">{{ item.title || 'Без названия' }}</span>
+              </div>
+            </el-option>
+          </el-select>
+
+          <!-- Режим редактирования: Показываем красивый тег -->
+          <div v-else class="static-source-display">
+            <span class="source-label">Источник:</span>
+            <el-tag
+              size="large"
+              effect="dark"
+              :style="{
+                '--el-tag-bg-color': 'var(--el-color-primary)',
+                '--el-tag-border-color': 'var(--el-color-primary)',
+                'background-color': 'var(--el-color-primary)',
+                'border-color': 'var(--el-color-primary)'
+              }"
+            >
+              {{ currentReflectionTitle }}
+            </el-tag>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <div class="editor-section__header">
+            <el-input v-model="artifact.title" class="title-field" placeholder="Название" />
             <el-rate
               v-model="artifact.importance"
               :max="3"
-              :colors="['#f59e0b', '#f59e0b', '#f59e0b']"
-              void-color="#262626"
+              :style="{ '--el-rate-fill-color': 'var(--el-color-primary)' }"
             />
           </div>
-        </div>
-        <div class="h-px bg-gradient-to-r from-amber-500/40 to-transparent w-2/3"></div>
-      </div>
 
-      <!-- Основное содержание -->
-      <div class="space-y-6">
-        <div class="relative">
-          <label class="text-[9px] uppercase tracking-widest text-gray-600 absolute -top-3 left-0"
-            >Summary</label
-          >
           <el-input
             v-model="artifact.content"
             type="textarea"
-            :autosize="{ minRows: 6, maxRows: 12 }"
-            placeholder="Сформулируйте итоговую мысль..."
-            class="modern-artifact-textarea"
+            :autosize="{ minRows: 10 }"
+            placeholder="О чем вы думаете?"
+            class="minimal-editor"
+            input-style="box-shadow: none; padding-left: 0; border: none;"
+            resize="none"
           />
         </div>
 
-        <!-- Управление тегами -->
-        <div class="bg-[#111] p-4 rounded-xl border border-white/5 space-y-3">
-          <label class="text-[9px] uppercase tracking-widest text-gray-500 flex items-center gap-2">
-            <el-icon><PriceTag /></el-icon> Смысловые связи (Tags)
-          </label>
+        <div class="tags-row-fixed">
+          <el-select
+            v-model="artifact.tags"
+            multiple
+            filterable
+            value-key="_id"
+            placeholder="Выберите теги"
+            style="width: 100%"
+            class="library-style-select"
+          >
+            <template #tag>
+              <el-tag
+                v-for="value in artifact.tags"
+                :key="value._id"
+                effect="dark"
+                :color="getTagDisplayData(value)?.color"
+                :style="{
+                  '--el-tag-bg-color': getTagDisplayData(value)?.color,
+                  '--el-tag-border-color': getTagDisplayData(value)?.color,
+                  'background-color': getTagDisplayData(value).color,
+                  'border-color': getTagDisplayData(value).color
+                }"
+              >
+                {{ value.label }}
+              </el-tag>
+            </template>
 
-          <div class="flex flex-wrap gap-2">
-            <el-tag
-              v-for="tag in artifact.tags"
-              :key="tag"
-              closable
-              effect="plain"
-              class="!bg-transparent !border-gray-700 !text-gray-400"
-              @close="handleRemoveTag(tag)"
-            >
-              {{ tag }}
-            </el-tag>
-
-            <el-input
-              v-if="inputVisible"
-              ref="InputRef"
-              v-model="inputValue"
-              class="!w-20"
-              size="small"
-              @keyup.enter="handleInputConfirm"
-              @blur="handleInputConfirm"
-            />
-            <el-button
-              v-else
-              class="!bg-transparent !border-dashed !border-gray-700 !text-gray-600"
-              size="small"
-              @click="showInput"
-            >
-              + New Tag
-            </el-button>
-          </div>
+            <el-option-group v-for="cat in categories" :key="cat._id" :label="cat.name">
+              <el-option
+                v-for="tag in cat.tagsWithColor"
+                :key="tag._id"
+                :label="tag.label"
+                :value="tag"
+              >
+                <el-tag
+                  :color="tag.color"
+                  effect="dark"
+                  :style="{
+                    '--el-tag-bg-color': tag.color,
+                    '--el-tag-border-color': tag.color,
+                    'background-color': tag.color,
+                    'border-color': tag.color
+                  }"
+                >
+                  {{ tag.label }}
+                </el-tag>
+              </el-option>
+            </el-option-group>
+          </el-select>
         </div>
       </div>
-    </div>
+    </template>
 
-    <!-- Футер: убрали Created From, оставили только время и кнопки -->
     <template #footer>
-      <div class="flex justify-between items-center w-full pt-4 border-t border-white/5">
-        <div class="text-[10px] text-gray-600 flex flex-col italic">
-          <span>Timestamp: {{ formatTimestamp(artifact.createdAt) }}</span>
-        </div>
-
-        <div class="flex gap-4 items-center">
-          <el-button link class="!text-gray-500 hover:!text-gray-300" @click="onHideModal">
-            Отмена
+      <div class="minimal-footer">
+        <div class="footer-left">
+          <el-button
+            v-if="mode === 'edit'"
+            type="danger"
+            plain
+            :icon="Delete"
+            @click="handleDelete"
+          >
+            Удалить
           </el-button>
+        </div>
+        <div class="footer-actions">
           <el-button
             type="primary"
-            class="!bg-amber-500 !border-none !text-black !font-bold !rounded-full px-8 hover:!bg-amber-400 transition-transform active:scale-95 shadow-lg shadow-amber-500/10"
+            class="save-action-btn"
+            :loading="submitting"
             @click="handleSave"
           >
-            Сохранить Артефакт
+            {{ mode === 'edit' ? 'Сохранить' : 'Зафиксировать' }}
           </el-button>
         </div>
       </div>
     </template>
-  </el-dialog>
+  </SystemModal>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import { PriceTag } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ref, watch, computed } from 'vue'
+import { Calendar, Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import SystemModal from '@/components/system/SystemModal.vue'
+import ReflectionService from '@/components/reflections/service/ReflectionService.js'
+import ArtifactService from '@/components/artifacts/service/ArtifactService.js'
+import TagService from '@/components/tags/service/TagService.js'
 
 const props = defineProps({
   modelValue: Boolean,
-  defaultData: Object
+  defaultData: Object,
+  mode: { type: String, default: 'create' }
 })
 
-const emit = defineEmits(['onHideModal', 'onSave'])
+const emit = defineEmits(['onHideModal', 'onSave', 'onDelete'])
+
+const reflections = ref([])
+const categories = ref([])
+const loading = ref(false)
+const submitting = ref(false)
 
 const artifact = ref({
+  reflectionId: '',
   title: '',
   content: '',
   importance: 1,
@@ -136,69 +185,278 @@ const artifact = ref({
   createdAt: new Date()
 })
 
-const inputVisible = ref(false)
-const inputValue = ref('')
-const InputRef = ref()
+const tags = ref([])
 
-const showInput = () => {
-  inputVisible.value = true
-  nextTick(() => InputRef.value.input.focus())
+const getTagsMap = computed(() => {
+  return tags.value.reduce((map, tag) => {
+    map[tag._id] = tag
+    return map
+  }, {})
+})
+
+// Находим заголовок текущего размышления для режима редактирования
+const currentReflectionTitle = computed(() => {
+  const targetId =
+    typeof artifact.value.reflectionId === 'object'
+      ? artifact.value.reflectionId._id
+      : artifact.value.reflectionId
+
+  const found = reflections.value.find((r) => r._id === targetId)
+  return found?.title || artifact.value.title || 'Источник не найден'
+})
+
+const getTagDisplayData = (tag) => {
+  return getTagsMap.value[tag._id] || tag
 }
 
-const handleInputConfirm = () => {
-  if (inputValue.value) {
-    if (!artifact.value.tags.includes(inputValue.value)) {
-      artifact.value.tags.push(inputValue.value)
+const fetchTagsData = async () => {
+  try {
+    const response = await TagService.categories.list()
+    categories.value = response.data
+    tags.value = categories.value.flatMap((category) => category.tagsWithColor)
+  } catch (e) {
+    console.error('Ошибка загрузки тегов:', e)
+  }
+}
+
+const fetchAvailableReflections = async () => {
+  loading.value = true
+  try {
+    const response = await ReflectionService.reflections.list()
+    reflections.value = response.data.filter((_reflection) => !_reflection.isDisabled)
+  } catch (e) {
+    ElMessage.error('Не удалось загрузить источники')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSourceChange = (val) => {
+  if (props.mode === 'create') {
+    const source = reflections.value.find((r) => r._id === val)
+    if (source) {
+      artifact.value.title = source.title || ''
+      artifact.value.content = source.content || ''
+      artifact.value.importance = source.importance || 1
+
+      if (source.tags && Array.isArray(source.tags)) {
+        artifact.value.tags = source.tags
+          .map((tagOrId) => {
+            const tagId = typeof tagOrId === 'object' ? tagOrId._id : tagOrId
+            return getTagsMap.value[tagId] || tagOrId
+          })
+          .filter(Boolean)
+      }
     }
   }
-  inputVisible.value = false
-  inputValue.value = ''
 }
 
-const handleRemoveTag = (tag) => {
-  artifact.value.tags = artifact.value.tags.filter((t) => t !== tag)
-}
-
-const formatTimestamp = (date) => {
-  return new Date(date).toLocaleString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit'
-  })
-}
-
-const handleSave = () => {
-  if (!artifact.value.title || !artifact.value.content) {
-    return ElMessage.warning('Заполните основные поля артефакта')
+const fetchArtifactData = async (id) => {
+  loading.value = true
+  try {
+    const response = await ArtifactService.artifacts.get(id)
+    artifact.value = response.data
+  } catch (e) {
+    ElMessage.error('Ошибка загрузки данных артефакта')
+    onHideModal()
+  } finally {
+    loading.value = false
   }
-  emit('onSave', artifact.value)
-  onHideModal()
+}
+
+const handleSave = async () => {
+  if (!artifact.value.reflectionId) return ElMessage.warning('Выберите источник')
+  if (!artifact.value.title) return ElMessage.warning('Укажите название')
+
+  submitting.value = true
+  try {
+    const rId =
+      typeof artifact.value.reflectionId === 'object'
+        ? artifact.value.reflectionId._id
+        : artifact.value.reflectionId
+
+    const payload = {
+      ...artifact.value,
+      reflectionId: rId,
+      tags: artifact.value.tags.map((t) => t._id)
+    }
+
+    let response
+    if (props.mode === 'edit') {
+      response = await ArtifactService.artifacts.update(artifact.value._id, payload)
+    } else {
+      response = await ArtifactService.artifacts.create(payload)
+    }
+
+    emit('onSave', response.data)
+    onHideModal()
+  } catch (e) {
+    ElMessage.error('Ошибка сохранения')
+  } finally {
+    submitting.value = false
+  }
+}
+
+const handleDelete = async () => {
+  try {
+    await ElMessageBox.confirm('Удалить этот артефакт?', 'Удаление', {
+      confirmButtonText: 'Удалить',
+      cancelButtonText: 'Отмена',
+      type: 'warning'
+    })
+    loading.value = true
+    await ArtifactService.artifacts.remove(artifact.value._id)
+    emit('onDelete', artifact.value._id)
+    onHideModal()
+  } catch (e) {
+    if (e !== 'cancel') console.error(e)
+  } finally {
+    loading.value = false
+  }
 }
 
 const onHideModal = () => emit('onHideModal')
 
+const formatFullDate = (date) =>
+  new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+
 watch(
   () => props.modelValue,
-  (val) => {
-    if (val && props.defaultData) {
-      artifact.value = {
-        ...artifact.value,
-        title: props.defaultData.title || '',
-        content: props.defaultData.content || '',
-        tags: props.defaultData.tags || [],
-        createdAt: new Date()
+  async (isOpen) => {
+    if (isOpen) {
+      await Promise.all([fetchTagsData(), fetchAvailableReflections()])
+
+      if (props.mode === 'edit' && props.defaultData?._id) {
+        await fetchArtifactData(props.defaultData._id)
+      } else {
+        artifact.value = {
+          reflectionId: '',
+          title: '',
+          content: '',
+          importance: 1,
+          tags: [],
+          createdAt: new Date()
+        }
       }
     }
-  }
+  },
+  { immediate: true }
 )
+
+const cardTitle = computed(() => (props.mode === 'create' ? 'Новая запись' : 'Редактирование'))
 </script>
 
-<style scoped>
-/* Добавляем явный курсор для всей области хедера, чтобы пользователь понимал, что можно тянуть */
-:deep(.el-dialog__header) {
-  cursor: move;
-  margin-right: 0;
-  padding-bottom: 10px;
+<style scoped lang="scss">
+.minimal-body {
+  padding: 10px 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.top-nav {
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+
+  .source-selector {
+    width: 100%;
+    :deep(.el-select__wrapper) {
+      padding: 0;
+      box-shadow: none !important;
+      background: transparent;
+    }
+  }
+}
+
+.static-source-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .source-label {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
+}
+
+.selected-source-label {
+  font-weight: 500;
+  color: var(--el-color-primary);
+  font-size: 0.95rem;
+}
+
+.option-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+  padding: 5px 0;
+
+  .option-title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .title-field {
+    flex: 1;
+    :deep(.el-input__wrapper) {
+      box-shadow: none !important;
+      padding: 0;
+      background: transparent;
+    }
+    :deep(.el-input__inner) {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+}
+
+.tags-row-fixed {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+
+.minimal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 24px;
+}
+
+.save-action-btn {
+  background-color: #6a89cc;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  font-weight: 600;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #4a69bd;
+    transform: translateY(-1px);
+  }
+}
+
+.info-side .timestamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 </style>

@@ -9,6 +9,9 @@ class ReflectionService {
     }
   }
 
+  /**
+   * @section Работа с размышлениями
+   */
   get reflections() {
     return {
       /** @function
