@@ -33,9 +33,15 @@
           v-for="note in notes"
           :key="note._id"
           class="reflection-card"
-          @click="openEditModal(note)"
+          :class="{ 'is-disabled': note.isDisabled }"
+          @click="!note.isDisabled && openEditModal(note)"
         >
           <div class="type-accent" :class="note.type"></div>
+
+          <!-- Иконка замочка для заблокированных -->
+          <div v-if="note.isDisabled" class="lock-badge">
+            <el-icon><Lock /></el-icon>
+          </div>
 
           <div class="card-inner">
             <div class="card-top">
@@ -62,7 +68,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { Edit, Opportunity, Document, ChatLineRound } from '@element-plus/icons-vue'
+import { Edit, Opportunity, Document, ChatLineRound, Lock } from '@element-plus/icons-vue'
 import ReflectionCard from '@/components/reflections/card/ReflectionCard.vue'
 import ReflectionService from '@/components/reflections/service/ReflectionService.js'
 
@@ -100,7 +106,6 @@ const openEditModal = (note) => {
   reflection.visibility = true
 }
 
-// Иконки теперь системные
 const getNoteIcon = (type) => {
   const icons = { idea: Opportunity, memo: Document, mind: ChatLineRound }
   return icons[type] || Document
@@ -136,36 +141,25 @@ onMounted(() => {
 
 .reflections-header {
   margin-bottom: 24px;
-  flex-shrink: 0; // Чтобы хедер не сжимался
-
-  .page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-  }
+  flex-shrink: 0;
   .page-subtitle {
     font-size: 1rem;
     color: var(--el-text-color-secondary);
   }
 }
 
-/* Область скролла */
 .scrollable-content {
   flex-grow: 1;
   overflow-y: auto;
-  padding-right: 8px; // Отступ для скроллбара
+  padding-right: 8px;
   padding-bottom: 20px;
 
-  /* Стилизация скроллбара под Element Plus */
   &::-webkit-scrollbar {
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
     background: var(--el-border-color-darker);
     border-radius: 10px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--el-text-color-placeholder);
   }
   &::-webkit-scrollbar-track {
     background: transparent;
@@ -176,7 +170,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
-  align-items: start; // Чтобы карточки разной наполненности не растягивались странно
+  align-items: start;
 }
 
 .reflection-card {
@@ -191,10 +185,38 @@ onMounted(() => {
   overflow: hidden;
   min-height: 140px;
 
-  &:hover {
+  &:hover:not(.is-disabled) {
     border-color: var(--el-color-primary-light-3);
     transform: translateY(-2px);
     box-shadow: var(--el-box-shadow-lighter);
+  }
+
+  // Стили для заблокированной карточки
+  &.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    filter: grayscale(0.4);
+    background: var(--el-fill-color-light);
+
+    .type-accent {
+      background: var(--el-text-color-placeholder) !important;
+    }
+  }
+
+  .lock-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--el-bg-color);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--el-box-shadow-extra-light);
+    color: var(--el-text-color-secondary);
+    z-index: 2;
   }
 
   .type-accent {
@@ -222,6 +244,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     gap: 8px;
+    padding-right: 20px; // Место под замочек
     .note-title {
       margin: 0;
       font-size: 0.95rem;

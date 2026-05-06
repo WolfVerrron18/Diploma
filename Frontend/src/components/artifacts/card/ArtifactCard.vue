@@ -36,7 +36,7 @@
 
           <!-- Режим редактирования: Показываем красивый тег -->
           <div v-else class="static-source-display">
-            <span class="source-label">Источник:</span>
+            <span class="source-label">Размышление:</span>
             <el-tag
               size="large"
               effect="dark"
@@ -196,13 +196,12 @@ const getTagsMap = computed(() => {
 
 // Находим заголовок текущего размышления для режима редактирования
 const currentReflectionTitle = computed(() => {
-  const targetId =
+  const target =
     typeof artifact.value.reflectionId === 'object'
-      ? artifact.value.reflectionId._id
-      : artifact.value.reflectionId
+      ? artifact.value.reflectionId
+      : reflections.value.find((r) => r._id === artifact.value.reflectionId)
 
-  const found = reflections.value.find((r) => r._id === targetId)
-  return found?.title || artifact.value.title || 'Источник не найден'
+  return target?.title
 })
 
 const getTagDisplayData = (tag) => {
@@ -432,22 +431,17 @@ const cardTitle = computed(() => (props.mode === 'create' ? 'Новая запи
 
 .minimal-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 16px;
   align-items: center;
   width: 100%;
   padding: 12px 24px;
 }
 
 .save-action-btn {
-  background-color: #6a89cc;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 32px;
-  font-weight: 600;
   transition: all 0.3s;
 
   &:hover {
-    background-color: #4a69bd;
     transform: translateY(-1px);
   }
 }

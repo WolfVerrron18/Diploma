@@ -2,7 +2,7 @@
   <div class="repository-container">
     <Teleport v-if="isMounted" to=".page-header">
       <el-button type="primary" round :icon="Tickets" @click="handleCreate">
-        Зафиксировать опыт
+        Создать артефакт
       </el-button>
     </Teleport>
 

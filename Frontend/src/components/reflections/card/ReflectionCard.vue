@@ -23,7 +23,13 @@
         element-loading-background="rgba(0, 0, 0, 0.7)"
       >
         <div class="meta-section">
-          <el-segmented v-model="note.type" :options="noteTypes" block class="custom-segmented">
+          <el-segmented
+            v-model="note.type"
+            :options="noteTypes"
+            block
+            class="custom-segmented"
+            :disabled="note?.isDisabled"
+          >
             <template #default="{ item }">
               <div class="segmented-item">
                 <el-icon><component :is="item.icon" /></el-icon>
@@ -36,9 +42,10 @@
         <div class="editor-section">
           <el-input
             v-model="note.title"
-            placeholder="Заголовок (необязательно)"
+            placeholder="Заголовок *"
             maxlength="100"
             class="title-field"
+            :disabled="note?.isDisabled"
           />
 
           <el-input
@@ -47,13 +54,14 @@
             :autosize="{ minRows: 8, maxRows: 12 }"
             placeholder="Начните писать свою мысль..."
             resize="none"
+            :disabled="note?.isDisabled"
           />
         </div>
       </div>
     </template>
 
     <template #footer>
-      <div class="modal-footer">
+      <div v-if="!note?.isDisabled" class="modal-footer">
         <el-button
           v-if="mode === 'edit'"
           type="danger"
@@ -104,9 +112,17 @@ const noteTypes = [
   { label: 'Рефлексия', value: 'mind', icon: ChatLineRound }
 ]
 
-const cardTitle = computed(() => (props.mode === 'create' ? 'Новая запись' : 'Редактирование'))
+const cardTitle = computed(() => {
+  return props.mode === 'create' ? 'Новая запись' : 'Редактирование'
+})
 
 const handleSave = async () => {
+  // Валидация заголовка
+  if (!note.value.title?.trim()) {
+    return ElMessage.warning('Пожалуйста, введите заголовок')
+  }
+
+  // Валидация контента
   if (!note.value.content?.trim()) {
     return ElMessage.warning('Поле контента не может быть пустым')
   }
@@ -204,6 +220,9 @@ watch(
     :deep(.el-input__inner) {
       font-size: 1.25rem;
       font-weight: 600;
+      &::placeholder {
+        color: var(--el-text-color-placeholder);
+      }
     }
   }
   :deep(.el-textarea__inner) {
@@ -214,62 +233,19 @@ watch(
   }
 }
 
-.minimal-tag {
-  border-radius: 6px;
-  border: none;
-  font-weight: 600;
-  color: #fff !important;
-}
-
-.tag-selector {
-  width: 110px;
-  :deep(.el-select__wrapper) {
-    background: transparent;
-    border: 1px dashed var(--el-border-color);
-    border-radius: 12px;
-    box-shadow: none !important;
-  }
-  :deep(.el-select__selection) {
-    display: none;
-  } // Скрываем выбранные внутри селектора
-}
-
-.tag-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  .color-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-  .check-icon {
-    margin-left: auto;
-    color: var(--el-color-primary);
-  }
-}
-
 .modal-footer {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   padding: 10px 0;
-
-  .delete-btn {
-    color: #f56c6c;
-    &:hover {
-      color: #fab6b6;
-    }
-  }
+  gap: 8px;
 
   .save-btn {
-    background-color: #6a89cc;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 25px;
+    transition: all 0.3s;
+
     &:hover {
-      background-color: #4a69bd;
+      transform: translateY(-1px);
     }
   }
 }

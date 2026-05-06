@@ -53,7 +53,7 @@
         <section class="category-form">
           <div class="form-row">
             <div class="input-group main-name">
-              <label class="field-label">НАЗВАНИЕ</label>
+              <label class="field-label">Название</label>
               <input
                 v-model="selectedCategory.name"
                 class="massive-input"
@@ -67,7 +67,7 @@
           </div>
 
           <div class="input-group">
-            <label class="field-label">ОПИСАНИЕ</label>
+            <label class="field-label">Описание</label>
             <el-input
               v-model="selectedCategory.description"
               type="textarea"
@@ -80,7 +80,7 @@
         <!-- Теги: Естественная ширина -->
         <section v-if="!isCreateMode" class="tags-section">
           <div class="section-header">
-            <span class="field-label">ТЕГИ КАТЕГОРИИ</span>
+            <span class="field-label">Теги категории</span>
           </div>
 
           <div class="tags-flex">
@@ -89,7 +89,6 @@
               :key="tag._id"
               size="default"
               closable
-              round
               effect="dark"
               :color="selectedCategory.color"
               @close="handleRemoveTag(tag._id)"
@@ -407,11 +406,9 @@ const handleDeleteCategory = async () => {
 
 .field-label {
   display: block;
-  font-size: 11px;
-  letter-spacing: 1.5px;
+  font-size: 16px;
   color: var(--el-text-color-secondary);
   margin-bottom: 12px;
-  text-transform: uppercase;
 }
 
 /* TAGS FLEX (Новое поведение) */
@@ -442,7 +439,8 @@ const handleDeleteCategory = async () => {
   padding-top: 30px;
   border-top: 1px solid var(--el-border-color-lighter);
   display: flex;
-  justify-content: space-between;
+  gap: 12px;
+  justify-content: center;
   align-items: center;
 }
 
