@@ -132,6 +132,10 @@ onMounted(() => {
 <style scoped lang="scss">
 .repository-container {
   padding: 20px;
+  // Высота с учетом шапки приложения
+  height: calc(100vh - 135px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .repo-header {
@@ -150,9 +154,9 @@ onMounted(() => {
 
 .retro-item {
   background: var(--el-bg-color-overlay);
-  border-radius: 16px; // Немного круглее артефактов для отличия
+  border-radius: 16px;
   border: 1px solid var(--el-border-color-light);
-  border-left: 4px solid var(--retro-color); // Акцент на цвете категории
+  border-left: 4px solid var(--retro-color);
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -229,7 +233,7 @@ onMounted(() => {
   line-height: 1.5;
   margin: 0 0 20px 0;
   flex-grow: 1;
-  font-style: italic; // Инсайт визуально выделяем курсивом
+  font-style: italic;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
