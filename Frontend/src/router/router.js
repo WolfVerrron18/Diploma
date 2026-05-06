@@ -11,6 +11,7 @@ import PageSettings from '@/components/pages/PageSettings.vue'
 import PageReflections from '@/components/pages/PageReflections.vue'
 import PageArtifacts from '@/components/pages/PageArtifacts.vue'
 import PageTags from '@/components/pages/PageTags.vue'
+import PageRetrospectives from '@/components/pages/PageRetrospectives.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,6 +44,12 @@ const router = createRouter({
           path: '/tags',
           name: 'tags',
           component: PageTags,
+          meta: { private: true }
+        },
+        {
+          path: '/retro',
+          name: 'retro',
+          component: PageRetrospectives,
           meta: { private: true }
         },
         {

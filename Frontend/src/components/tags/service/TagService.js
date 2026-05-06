@@ -24,6 +24,10 @@ class TagService {
       list: () => http.get(this.path.categories),
 
       /** @function
+       * @name listActive - Получение только активных категорий (с неархивными артефактами) */
+      listActive: () => http.get(`${this.path.categories}/active`), // <-- ДОБАВЛЕНО
+
+      /** @function
        * @name create - Создание новой категории */
       create: (payload) => http.post(this.path.categories, payload),
 

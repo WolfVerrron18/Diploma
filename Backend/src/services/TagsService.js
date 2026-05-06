@@ -1,6 +1,7 @@
 /** @module TagService - Сервис управления справочником тегов и категорий */
 import Category from '../models/tags/CategoryTags.js'
 import Tag from '../models/tags/Tag.js'
+import mongoose from 'mongoose'
 
 class TagService {
 	/**
@@ -17,6 +18,52 @@ class TagService {
 			list: (userId) => {
 				// Предполагаем, что справочник может быть приватным для юзера
 				return Category.find({ userId }).populate('tags').sort({ order: 1 })
+			},
+
+			listActive: async (userId) => {
+				try {
+					const Artifact = mongoose.model('Artifact')
+					const tag = mongoose.model('Tag')
+					const Category = mongoose.model('CategoryTags')
+
+					// 1. Находим все неархивированные артефакты пользователя
+					// Используем .lean(), чтобы получить чистые объекты и работало быстрее
+					const artifacts = await Artifact.find({
+						userId,
+						isArchived: { $ne: true },
+					}).lean()
+					console.log(artifacts)
+					if (!artifacts.length) return []
+
+					// 2. Собираем все ID тегов из этих артефактов в один плоский массив
+					// flatMap превратит [[id1, id2], [id3]] в [id1, id2, id3]
+					const allTagIds = artifacts.flatMap((art) => art.tags)
+
+					if (!allTagIds.length) return []
+
+					// 3. Находим эти теги в базе, чтобы узнать их categoryId
+					const tags = await tag
+						.find({
+							_id: { $in: allTagIds },
+						})
+						.lean()
+
+					// 4. Достаем уникальные ID категорий (используем Set, чтобы не было дублей)
+					const activeCategoryIds = [...new Set(tags.map((t) => t.categoryId.toString()))]
+
+					if (!activeCategoryIds.length) return []
+
+					// 5. Финальный запрос: отдаем полные объекты категорий
+					return await Category.find({
+						_id: { $in: activeCategoryIds },
+						userId,
+					})
+						.populate('tags')
+						.sort({ order: 1 })
+				} catch (error) {
+					console.error('Ошибка в "тупом" методе listActive:', error)
+					throw error
+				}
 			},
 
 			/** Создание категории */

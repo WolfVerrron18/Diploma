@@ -1,24 +1,42 @@
 <template>
   <div class="repository-container">
     <Teleport v-if="isMounted" to=".page-header">
-      <el-button type="primary" round :icon="Tickets" @click="handleCreate">
-        Создать артефакт
-      </el-button>
+      <div class="header-actions">
+        <!-- Кнопка фильтрации архивных записей -->
+        <el-button
+          :type="showArchived ? 'warning' : 'info'"
+          round
+          plain
+          @click="showArchived = !showArchived"
+        >
+          {{ showArchived ? 'Скрыть архив' : 'Показать архив' }}
+        </el-button>
+
+        <el-button type="primary" round :icon="Tickets" @click="handleCreate">
+          Создать артефакт
+        </el-button>
+      </div>
     </Teleport>
 
     <header class="repo-header">
       <div class="brand">
-        <span class="brand-subtitle">Ваши артефакты, основанные на размышлениях</span>
+        <span class="brand-subtitle">
+          {{ showArchived ? 'Все артефакты (включая архив)' : 'Ваши активные артефакты' }}
+        </span>
       </div>
     </header>
 
     <div v-loading="loading" class="artifacts-grid">
       <div
-        v-for="item in artifacts"
+        v-for="item in filteredArtifacts"
         :key="item._id"
         class="artifact-item"
-        @click="handleEdit(item)"
+        :class="{ 'is-archived': item.isArchived }"
+        @click="!item.isArchived && handleEdit(item)"
       >
+        <!-- Индикатор архива -->
+        <div v-if="item.isArchived" class="archive-badge">Архив</div>
+
         <div class="artifact-card-inner">
           <div class="card-header">
             <h3 class="artifact-title">{{ item.title || 'Без названия' }}</h3>
@@ -58,8 +76,10 @@
         </div>
       </div>
 
-      <div v-if="!loading && !artifacts.length" class="empty-state">
-        <el-empty description="Артефактов пока нет." />
+      <div v-if="!loading && !filteredArtifacts.length" class="empty-state">
+        <el-empty
+          :description="showArchived ? 'Артефактов пока нет.' : 'Все артефакты заархивированы.'"
+        />
       </div>
     </div>
 
@@ -75,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ArrowRight, Tickets, Calendar } from '@element-plus/icons-vue'
 import ArtifactCard from '@/components/artifacts/card/ArtifactCard.vue'
 import ArtifactService from '@/components/artifacts/service/ArtifactService.js'
@@ -86,6 +106,17 @@ const modalVisible = ref(false)
 const modalMode = ref('create')
 const selectedArtifact = ref(null)
 const isMounted = ref(false)
+
+// Фильтр архива
+const showArchived = ref(false)
+
+/**
+ * Фильтрация артефактов на лету
+ */
+const filteredArtifacts = computed(() => {
+  if (showArchived.value) return artifacts.value
+  return artifacts.value.filter((art) => !art.isArchived)
+})
 
 /**
  * Загрузка списка артефактов
@@ -110,7 +141,6 @@ const handleCreate = () => {
 
 const handleEdit = (item) => {
   modalMode.value = 'edit'
-  // Передаем объект с ID, ArtifactCard сам подтянет свежие данные
   selectedArtifact.value = { _id: item._id }
   modalVisible.value = true
 }
@@ -147,6 +177,18 @@ onMounted(() => {
 <style scoped lang="scss">
 .repository-container {
   padding: 20px;
+
+  /* Добавляем расчет высоты: 100% экрана минус высота хедера страницы */
+  /* Если хедер примерно 60px, то ставим 60px. Подправь под свой проект */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+
+  /* Плавный скролл */
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .repo-header {
@@ -164,7 +206,6 @@ onMounted(() => {
 }
 
 .artifact-item {
-  // ЗАМЕНА: Используем системные переменные фона и границ
   background: var(--el-bg-color-overlay);
   border-radius: 12px;
   border: 1px solid var(--el-border-color-light);
@@ -172,10 +213,11 @@ onMounted(() => {
   flex-direction: column;
   transition: all 0.25s ease;
   cursor: pointer;
-  // Мягкая тень, которая в темной теме будет почти невидима
   box-shadow: var(--el-box-shadow-light);
+  position: relative;
+  overflow: hidden;
 
-  &:hover {
+  &:hover:not(.is-archived) {
     transform: translateY(-4px);
     box-shadow: var(--el-box-shadow);
     border-color: var(--el-color-primary);
@@ -185,6 +227,41 @@ onMounted(() => {
       transform: translateX(4px);
     }
   }
+
+  // Стили для архивного состояния
+  &.is-archived {
+    cursor: not-allowed;
+    opacity: 0.6;
+    filter: grayscale(0.4);
+    background: var(--el-fill-color-light);
+    border-color: var(--el-border-color-lighter);
+
+    .artifact-title {
+      color: var(--el-text-color-secondary);
+    }
+
+    .artifact-preview {
+      color: var(--el-text-color-placeholder);
+    }
+
+    &:hover {
+      border-color: var(--el-text-color-placeholder);
+    }
+  }
+}
+
+.archive-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--el-text-color-secondary);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 800;
+  z-index: 2;
 }
 
 .artifact-card-inner {
@@ -200,12 +277,12 @@ onMounted(() => {
   align-items: flex-start;
   margin-bottom: 12px;
   gap: 12px;
+  padding-right: 45px; // Место под бейдж архива
 }
 
 .artifact-title {
   font-size: 17px;
   font-weight: 700;
-  // ЗАМЕНА: Основной цвет текста из темы
   color: var(--el-text-color-primary);
   margin: 0;
   line-height: 1.3;
@@ -213,7 +290,6 @@ onMounted(() => {
 
 .artifact-preview {
   font-size: 14px;
-  // ЗАМЕНА: Регулярный цвет текста из темы
   color: var(--el-text-color-regular);
   line-height: 1.6;
   margin: 0 0 20px 0;
@@ -230,7 +306,6 @@ onMounted(() => {
   flex-direction: column;
   gap: 14px;
   padding-top: 16px;
-  // ЗАМЕНА: Цвет разделителя
   border-top: 1px solid var(--el-border-color-extra-light);
 }
 
@@ -271,8 +346,6 @@ onMounted(() => {
 .mini-rate {
   height: auto;
   flex-shrink: 0;
-  // Переменная цвета звезд подтянется сама, если в проекте настроена тема
-  --el-rate-fill-color: var(--el-color-primary);
 }
 
 .empty-state {

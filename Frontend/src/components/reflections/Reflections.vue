@@ -1,10 +1,21 @@
 <template>
   <div class="reflections-container">
-    <!-- Кнопка создания в хедере -->
+    <!-- Кнопка создания и фильтр в хедере -->
     <Teleport v-if="isMounted" to=".page-header">
-      <el-button type="primary" round :icon="Edit" @click="openReflectionInCreateMode">
-        Записать мысль
-      </el-button>
+      <div class="header-actions">
+        <el-button
+          :type="showDisabled ? 'warning' : 'info'"
+          round
+          plain
+          @click="showDisabled = !showDisabled"
+        >
+          {{ showDisabled ? 'Скрыть архив' : 'Показать архив' }}
+        </el-button>
+
+        <el-button type="primary" round :icon="Edit" @click="openReflectionInCreateMode">
+          Записать мысль
+        </el-button>
+      </div>
     </Teleport>
 
     <ReflectionCard
@@ -18,7 +29,9 @@
 
     <div class="reflections-header">
       <div class="title-section">
-        <p class="page-subtitle">Ваши идеи и заметки</p>
+        <p class="page-subtitle">
+          {{ showDisabled ? 'Все идеи и заметки' : 'Ваши актуальные идеи и заметки' }}
+        </p>
       </div>
     </div>
 
@@ -30,7 +43,7 @@
 
       <div v-else class="reflections-grid">
         <div
-          v-for="note in notes"
+          v-for="note in filteredNotes"
           :key="note._id"
           class="reflection-card"
           :class="{ 'is-disabled': note.isDisabled }"
@@ -61,13 +74,16 @@
         </div>
       </div>
 
-      <el-empty v-if="!loading && notes.length === 0" />
+      <el-empty
+        v-if="!loading && filteredNotes.length === 0"
+        :description="showDisabled ? 'Записей пока нет' : 'Все мысли уже использованы или скрыты'"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { Edit, Opportunity, Document, ChatLineRound, Lock } from '@element-plus/icons-vue'
 import ReflectionCard from '@/components/reflections/card/ReflectionCard.vue'
 import ReflectionService from '@/components/reflections/service/ReflectionService.js'
@@ -75,11 +91,20 @@ import ReflectionService from '@/components/reflections/service/ReflectionServic
 const notes = ref([])
 const loading = ref(true)
 const isMounted = ref(false)
+const showDisabled = ref(false) // Состояние фильтра
 
 const reflection = reactive({
   visibility: false,
   cardMode: 'create',
   activeRow: {}
+})
+
+/**
+ * Фильтрация заметок на фронте
+ */
+const filteredNotes = computed(() => {
+  if (showDisabled.value) return notes.value
+  return notes.value.filter((note) => !note.isDisabled)
 })
 
 const fetchNotes = async () => {
@@ -139,6 +164,11 @@ onMounted(() => {
   flex-direction: column;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .reflections-header {
   margin-bottom: 24px;
   flex-shrink: 0;
@@ -191,15 +221,19 @@ onMounted(() => {
     box-shadow: var(--el-box-shadow-lighter);
   }
 
-  // Стили для заблокированной карточки
   &.is-disabled {
     cursor: not-allowed;
-    opacity: 0.7;
-    filter: grayscale(0.4);
+    opacity: 0.6;
+    filter: grayscale(0.6);
     background: var(--el-fill-color-light);
 
     .type-accent {
       background: var(--el-text-color-placeholder) !important;
+    }
+
+    .note-title,
+    .note-content {
+      color: var(--el-text-color-placeholder);
     }
   }
 
@@ -215,7 +249,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     box-shadow: var(--el-box-shadow-extra-light);
-    color: var(--el-text-color-secondary);
+    color: var(--el-text-color-placeholder);
     z-index: 2;
   }
 
@@ -244,7 +278,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    padding-right: 20px; // Место под замочек
+    padding-right: 20px;
     .note-title {
       margin: 0;
       font-size: 0.95rem;

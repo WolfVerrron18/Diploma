@@ -17,11 +17,11 @@ import UserRouter from './src/router/UserRouter.js'
 import AuthRouter from './src/router/AuthRouter.js'
 import PurposeRouter from './src/router/PurposeRouter.js'
 import BankAccountRouter from './src/router/BankAccountRouter.js'
-import CategoryRouter from './src/router/CategoryRouter.js'
 import TransactionRouter from './src/router/TransactionRouter.js'
 import ReflectionRouter from './src/router/ReflectionRouter.js'
 import TagsRouter from './src/router/TagsRouter.js'
 import ArtifactRouter from './src/router/ArtifactRouter.js'
+import RetrospectiveRouter from './src/router/RetrospectiveRouter.js'
 
 const app = express()
 
@@ -38,6 +38,7 @@ app.use('/api', TransactionRouter)
 app.use('/api', ReflectionRouter)
 app.use('/api', TagsRouter)
 app.use('/api', ArtifactRouter)
+app.use('/api', RetrospectiveRouter)
 
 connectionDatabase()
 	.then(() => {

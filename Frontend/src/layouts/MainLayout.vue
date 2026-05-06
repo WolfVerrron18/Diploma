@@ -124,9 +124,9 @@ const pages = [
     title: 'Теги'
   },
   {
-    name: 'statistics',
+    name: 'retro',
     icon: PieChart,
-    title: 'Статистика'
+    title: 'Ретроспективы'
   }
 ]
 

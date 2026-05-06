@@ -28,6 +28,19 @@ class TagController {
 				}
 			},
 
+			/** Получить только "активные" категории (где есть неархивные артефакты) */
+			listActive: async (req, res) => {
+				try {
+					const data = await TagsService.categories.listActive(req.user.id)
+					res.json(data)
+				} catch (error) {
+					res.status(500).json({
+						message: 'Ошибка при получении активных категорий',
+						error: error.message,
+					})
+				}
+			},
+
 			/** Создать новую категорию */
 			create: async (req, res) => {
 				try {
