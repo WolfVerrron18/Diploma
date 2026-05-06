@@ -91,6 +91,7 @@ import {
   Moon,
   Tickets,
   PieChart,
+  Histogram,
   Edit,
   Collection
 } from '@element-plus/icons-vue'
@@ -127,6 +128,11 @@ const pages = [
     name: 'retro',
     icon: PieChart,
     title: 'Ретроспективы'
+  },
+  {
+    name: 'graph',
+    icon: Histogram,
+    title: 'Аналитика'
   }
 ]
 
@@ -157,8 +163,6 @@ const currentDate = computed(() => {
 // --- Методы ---
 // Метод сохранения настроек
 const toggleDark = async (e) => {
-  console.log(e)
-
   try {
     // Подготавливаем данные для бекенда
     const payload = { isDarkMode: isDark.value }
