@@ -33,7 +33,7 @@
           <div class="user-profile">
             <span class="username">{{ getUserName }}</span>
             <el-dropdown trigger="click">
-              <el-avatar :size="35" :src="getUserAvatar" class="avatar-hover" />
+              <el-avatar :size="35" :src="store.userAvatar" class="avatar-hover" />
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item :icon="Setting" @click="router.push('settings')"
@@ -137,10 +137,8 @@ const pages = [
 ]
 
 // --- Вычисляемые свойства ---
-const getUserName = computed(() => store.getUser?.name || 'Пользователь')
-
-const getUserAvatar = computed(
-  () => store.getUser?.avatar || 'https://i.ytimg.com/vi/q3XULScESEA/maxresdefault.jpg'
+const getUserName = computed(
+  () => `${store.getUser?.name} ${store.getUser?.surname ?? ''}` || 'Пользователь'
 )
 
 const activeMenuIndex = computed(() => {

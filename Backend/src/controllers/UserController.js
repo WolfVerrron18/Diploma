@@ -9,6 +9,9 @@ import logger from '../logger/logger.js'
 /** @module bcrypt - Модуль шифрования */
 import bcrypt from 'bcrypt'
 
+import { Readable } from 'stream' // Встроенный модуль Node.js
+import mongoose from 'mongoose'
+
 /** @class UserController - Класс контроллера для работы с пользователями */
 class UserController {
 	/** @function
@@ -61,15 +64,43 @@ class UserController {
 		}
 	}
 
-	/** @function
-	 * @name update - Обновление пользователя */
 	async update(req, res) {
 		try {
-			const category = await UserService.users.update(req.params.id, req.body)
+			const payload = { ...req.body }
 
-			res.status(200).json(category)
+			if (req.file) {
+				const db = mongoose.connection.db
+				const bucket = new mongoose.mongo.GridFSBucket(db, {
+					bucketName: 'avatars',
+				})
+
+				// Создаем уникальное имя файла
+				const filename = `avatar-${Date.now()}-${req.file.originalname}`
+
+				// Создаем поток для записи в GridFS
+				const uploadStream = bucket.openUploadStream(filename, {
+					contentType: req.file.mimetype,
+				})
+
+				// Превращаем буфер файла в читаемый поток и отправляем в базу
+				const readableStream = new Readable()
+				readableStream.push(req.file.buffer)
+				readableStream.push(null) // Сигнал завершения потока
+
+				await new Promise((resolve, reject) => {
+					readableStream.pipe(uploadStream).on('error', reject).on('finish', resolve)
+				})
+
+				payload.avatar = filename // Сохраняем имя в профиль пользователя
+			}
+
+			const user = await UserService.users.update(req.params.id, payload)
+
+			global.currentUser = user
+			res.status(200).json(user)
 		} catch (e) {
-			res.status(500).json(e)
+			console.error('Ошибка сохранения:', e)
+			res.status(500).json({ message: 'Ошибка при сохранении файла' })
 		}
 	}
 }

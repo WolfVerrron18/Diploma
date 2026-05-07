@@ -9,11 +9,22 @@ class UserService {
 
   get user() {
     return {
-      /** @function
-       * @name getCurrentUser - Получение текущего пользователя */
-      getCurrentUser: () => http.get('api/users/account/my'),
+      getCurrentUser: () => http.get(`${this.path.user}/account/my`),
 
-      update: (id, payload) => http.put(`api/users/${id}`, payload)
+      /**
+       * Универсальное обновление
+       * Если payload — FormData, заголовки подхватятся автоматически
+       */
+      update: (id, payload) => http.patch(`${this.path.user}/${id}`, payload),
+
+      /**
+       * Специальный метод для аватара, чтобы бить точно в цель
+       */
+      updateAvatar: (id, formData) => {
+        return http.patch(`${this.path.user}/${id}/avatar`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+      }
     }
   }
 }

@@ -8,14 +8,12 @@
 <script>
 import { computed } from 'vue'
 
-import { useRoute,useRouter } from 'vue-router'
-
-import { ElLoading } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
 
 /** @module lodash - Утилиты */
 import { isEmpty } from 'lodash'
 
-import { ElNotification } from 'element-plus'
+import { ElMessage, ElLoading } from 'element-plus'
 
 /** @module useUserStore - Глобальное хранилище пользователя */
 import { useUserStore } from '@/stores/user.js'
@@ -57,19 +55,13 @@ export default {
           const { data } = await UserService.user.getCurrentUser()
 
           userStore.setUser(data)
-        }
-        catch (e) {
+        } catch (e) {
           if (route.name !== 'auth') {
-            ElNotification.error({
-              title: 'error',
-              message: 'Вы не авторизованы',
-              showClose: true,
-            })
+            ElMessage.error('Вы не авторизованы')
 
             router.push({ name: 'auth' })
           }
-        }
-        finally {
+        } finally {
           loading.close()
         }
       }
