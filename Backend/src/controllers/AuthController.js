@@ -47,6 +47,8 @@ class AuthController {
 
 			const user = await UserService.users.create(req.body)
 
+			global.currentUser = user
+
 			const token = jwt.sign({ id: user._id }, process.env.SECRET, {
 				expiresIn: '1h',
 			})

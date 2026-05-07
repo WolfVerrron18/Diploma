@@ -193,21 +193,19 @@ const fetchCategories = async (autoSelectFirst = false) => {
 const asyncCreateCategoryAndTags = async () => {
   initialLoading.value = true
 
-  try {
-    const categories = generateCategoryAndTags()
+  const categories = generateCategoryAndTags()
 
-    for (const setupCategory of categories) {
-      const { tags, ..._category } = setupCategory
+  for (const setupCategory of categories) {
+    const { tags, ..._category } = setupCategory
 
-      const { data } = await TagService.categories.create(_category)
+    const { data } = await TagService.categories.create(_category)
 
-      for (const tag of tags) {
-        await TagService.tags.create({ categoryId: data._id, ...tag })
-      }
+    for (const tag of tags) {
+      await TagService.tags.create({ categoryId: data._id, ...tag })
     }
-  } finally {
-    initialLoading.value = false
   }
+
+  fetchCategories(true)
 }
 
 const isMounted = ref(false)
