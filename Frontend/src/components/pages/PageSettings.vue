@@ -232,7 +232,7 @@ const fetchUserData = async () => {
     syncFormWithData(data)
     store.setUser(data)
     loading.value = false
-    nextTick(() => animateEntry())
+    await nextTick(() => animateEntry())
   } catch (e) {
     ElMessage.error('Ошибка получения данных')
     loading.value = false
