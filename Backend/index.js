@@ -15,9 +15,6 @@ import { connectionDatabase } from './src/db/database.js'
 
 import UserRouter from './src/router/UserRouter.js'
 import AuthRouter from './src/router/AuthRouter.js'
-import PurposeRouter from './src/router/PurposeRouter.js'
-import BankAccountRouter from './src/router/BankAccountRouter.js'
-import TransactionRouter from './src/router/TransactionRouter.js'
 import ReflectionRouter from './src/router/ReflectionRouter.js'
 import TagsRouter from './src/router/TagsRouter.js'
 import ArtifactRouter from './src/router/ArtifactRouter.js'
@@ -34,9 +31,6 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }))
 
 app.use('/', AuthRouter)
 app.use('/api', UserRouter)
-app.use('/api', PurposeRouter)
-app.use('/api', BankAccountRouter)
-app.use('/api', TransactionRouter)
 app.use('/api', ReflectionRouter)
 app.use('/api', TagsRouter)
 app.use('/api', ArtifactRouter)

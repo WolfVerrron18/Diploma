@@ -11,7 +11,6 @@ const moodThemes = {
  * @param {string} mood - ключ из moodThemes
  */
 export const applyMoodTheme = (mood) => {
-  console.log(mood)
   const el = document.documentElement
   const theme = moodThemes[mood] || moodThemes.default
 

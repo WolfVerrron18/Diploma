@@ -2,11 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import MainLayout from '@/layouts/MainLayout.vue'
 import PageAuth from '@/components/pages/PageAuth.vue'
-import PagePurposes from '@/components/pages/PagePurposes.vue'
-import PageBankAccounts from '@/components/pages/PageBankAccounts.vue'
-import PageCategories from '@/components/pages/PageCategories.vue'
-import PageTODOList from '@/components/pages/PageTODOList.vue'
-import PageStatistics from '@/components/pages/PageStatistics.vue'
 import PageSettings from '@/components/pages/PageSettings.vue'
 import PageReflections from '@/components/pages/PageReflections.vue'
 import PageArtifacts from '@/components/pages/PageArtifacts.vue'
@@ -23,12 +18,6 @@ const router = createRouter({
       component: MainLayout,
       meta: { private: true },
       children: [
-        {
-          path: '/notes',
-          name: 'notes',
-          component: PageTODOList,
-          meta: { private: true }
-        },
         {
           path: '/reflections',
           name: 'reflections',
@@ -60,34 +49,9 @@ const router = createRouter({
           meta: { private: true }
         },
         {
-          path: '/statistics',
-          name: 'statistics',
-          component: PageStatistics,
-          meta: { private: true }
-        },
-        {
           path: '/settings',
           name: 'settings',
           component: PageSettings,
-          meta: { private: true }
-        },
-
-        {
-          path: '/purpose',
-          name: 'purpose',
-          component: PagePurposes,
-          meta: { private: true }
-        },
-        {
-          path: '/bank-accounts',
-          name: 'bankAccounts',
-          component: PageBankAccounts,
-          meta: { private: true }
-        },
-        {
-          path: '/categories',
-          name: 'categories',
-          component: PageCategories,
           meta: { private: true }
         }
       ]
