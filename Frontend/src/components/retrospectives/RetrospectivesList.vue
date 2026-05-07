@@ -2,11 +2,13 @@
   <div class="repository-container">
     <!-- Кнопка создания через Teleport в хедер страницы -->
     <Teleport v-if="isMounted" to=".page-header">
-      <el-button type="primary" round :icon="Collection" @click="handleCreate">
-        Провести ретроспективу
-      </el-button>
+      <div class="header-actions">
+        <el-button type="primary" round :icon="Collection" @click="handleCreate">
+          Провести ретроспективу
+        </el-button>
 
-      <el-button type="info" round @click="asyncCreateRetros"> Тестовые данные </el-button>
+        <el-button type="info" round @click="asyncCreateRetros"> Тестовые данные </el-button>
+      </div>
     </Teleport>
 
     <header class="repo-header">
@@ -294,5 +296,10 @@ onMounted(() => {
 .empty-state {
   grid-column: 1 / -1;
   padding: 80px 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 </style>
