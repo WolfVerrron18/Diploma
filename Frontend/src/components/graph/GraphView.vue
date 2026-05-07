@@ -13,7 +13,7 @@
       </el-card>
 
       <el-card shadow="never" class="stat-card">
-        <template #header><span class="label">Топ категория</span></template>
+        <template #header><span class="label">Чаще всего использованный тег</span></template>
         <span class="value" :style="{ color: topTagInfo.color }">{{ topTagInfo.label }}</span>
       </el-card>
 
