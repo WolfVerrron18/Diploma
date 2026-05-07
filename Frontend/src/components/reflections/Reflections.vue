@@ -3,6 +3,10 @@
     <!-- Кнопка создания и фильтр в хедере -->
     <Teleport v-if="isMounted" to=".page-header">
       <div class="header-actions">
+        <el-button type="info" round plain @click="asyncCreateReflections">
+          Тестовые данные
+        </el-button>
+
         <el-button
           :type="showDisabled ? 'warning' : 'info'"
           round
@@ -88,6 +92,8 @@ import { Edit, Opportunity, Document, ChatLineRound, Lock } from '@element-plus/
 import ReflectionCard from '@/components/reflections/card/ReflectionCard.vue'
 import ReflectionService from '@/components/reflections/service/ReflectionService.js'
 
+import generateReflections from '@/components/reflections/data/ReflectionData.js'
+
 const notes = ref([])
 const loading = ref(true)
 const isMounted = ref(false)
@@ -149,6 +155,25 @@ const formatDate = (dateStr) => {
   })
 }
 
+const asyncCreateReflections = async () => {
+  loading.value = true
+
+  const reflections = generateReflections()
+
+  try {
+    for (const _reflection of reflections) {
+      await ReflectionService.reflections.create(_reflection)
+    }
+
+    const response = await ReflectionService.reflections.list()
+    notes.value = response.data || []
+  } catch (e) {
+    console.error('Ошибка:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
   fetchNotes()
   isMounted.value = true
@@ -158,7 +183,6 @@ onMounted(() => {
 <style scoped lang="scss">
 .reflections-container {
   padding: 20px;
-  max-width: 1400px;
   height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;

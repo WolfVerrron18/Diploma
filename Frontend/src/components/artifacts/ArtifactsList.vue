@@ -15,6 +15,8 @@
         <el-button type="primary" round :icon="Tickets" @click="handleCreate">
           Создать артефакт
         </el-button>
+
+        <el-button type="info" round @click="asyncCreateArtifacts"> Тестовые данные </el-button>
       </div>
     </Teleport>
 
@@ -99,6 +101,10 @@ import { ref, onMounted, computed } from 'vue'
 import { ArrowRight, Tickets, Calendar } from '@element-plus/icons-vue'
 import ArtifactCard from '@/components/artifacts/card/ArtifactCard.vue'
 import ArtifactService from '@/components/artifacts/service/ArtifactService.js'
+import ReflectionService from '@/components/reflections/service/ReflectionService.js'
+
+import { generateFullSeedData } from '@/components/artifacts/data/ArtifactsData.js'
+import TagService from '@/components/tags/service/TagService.js'
 
 const artifacts = ref([])
 const loading = ref(false)
@@ -117,6 +123,21 @@ const filteredArtifacts = computed(() => {
   if (showArchived.value) return artifacts.value
   return artifacts.value.filter((art) => !art.isArchived)
 })
+
+const asyncCreateArtifacts = async () => {
+  loading.value = true
+
+  const { data } = await ReflectionService.reflections.list()
+  const { data: categories } = await TagService.categories.list()
+
+  const _artifacts = generateFullSeedData(data, categories)
+
+  for (const _artifact of _artifacts) {
+    await ArtifactService.artifacts.create(_artifact)
+  }
+
+  await fetchArtifacts()
+}
 
 /**
  * Загрузка списка артефактов
@@ -180,7 +201,7 @@ onMounted(() => {
 
   /* Добавляем расчет высоты: 100% экрана минус высота хедера страницы */
   /* Если хедер примерно 60px, то ставим 60px. Подправь под свой проект */
-  height: calc(100vh - 80px);
+  height: calc(100% - 80px);
   overflow-y: auto;
 
   /* Плавный скролл */

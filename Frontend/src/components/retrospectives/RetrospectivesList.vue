@@ -5,6 +5,8 @@
       <el-button type="primary" round :icon="Collection" @click="handleCreate">
         Провести ретроспективу
       </el-button>
+
+      <el-button type="info" round @click="asyncCreateRetros"> Тестовые данные </el-button>
     </Teleport>
 
     <header class="repo-header">
@@ -74,6 +76,10 @@ import { ref, onMounted } from 'vue'
 import { ArrowRight, Collection, Calendar, Document } from '@element-plus/icons-vue'
 import RetrospectiveCard from '@/components/retrospectives/card/RetrospectiveCard.vue'
 import RetrospectiveService from '@/components/retrospectives/service/RetrospectiveService.js'
+import ArtifactService from '@/components/artifacts/service/ArtifactService.js'
+
+import { getArtifactsByCategory } from '@/components/retrospectives/data/RetrospectiveData.js'
+import TagService from '@/components/tags/service/TagService.js'
 
 const retrospectives = ref([])
 const loading = ref(false)
@@ -81,6 +87,21 @@ const modalVisible = ref(false)
 const modalMode = ref('create')
 const selectedRetro = ref(null)
 const isMounted = ref(false)
+
+const asyncCreateRetros = async () => {
+  loading.value = true
+
+  const { data: categories } = await TagService.categories.list()
+  const { data: artifacts } = await ArtifactService.artifacts.list()
+
+  for (const category of categories) {
+    const retro = getArtifactsByCategory(category, artifacts)
+
+    await RetrospectiveService.retrospectives.create(retro)
+  }
+
+  fetchRetrospectives()
+}
 
 const fetchRetrospectives = async () => {
   loading.value = true

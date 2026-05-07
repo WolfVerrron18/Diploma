@@ -1,5 +1,14 @@
 <template>
   <div class="tags-handbook" v-loading.fullscreen.lock="initialLoading">
+    <!-- Кнопка создания и фильтр в хедере -->
+    <Teleport v-if="isMounted" to=".page-header">
+      <div class="header-actions">
+        <el-button type="info" round @click="asyncCreateCategoryAndTags">
+          Тестовые данные
+        </el-button>
+      </div>
+    </Teleport>
+
     <!-- ЛЕВАЯ ПАНЕЛЬ (Фиксированная) -->
     <aside class="sidebar">
       <div class="sidebar-header">
@@ -149,9 +158,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Collection, Close, Delete } from '@element-plus/icons-vue'
+import { Collection, Delete } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import TagService from '@/components/tags/service/TagService.js'
+
+import generateCategoryAndTags from '@/components/tags/data/TagsData.js'
 
 const categories = ref([])
 const selectedCategory = ref(null)
@@ -179,7 +190,33 @@ const fetchCategories = async (autoSelectFirst = false) => {
   }
 }
 
-onMounted(() => fetchCategories(true))
+const asyncCreateCategoryAndTags = async () => {
+  initialLoading.value = true
+
+  try {
+    const categories = generateCategoryAndTags()
+
+    for (const setupCategory of categories) {
+      const { tags, ..._category } = setupCategory
+
+      const { data } = await TagService.categories.create(_category)
+
+      for (const tag of tags) {
+        await TagService.tags.create({ categoryId: data._id, ...tag })
+      }
+    }
+  } finally {
+    initialLoading.value = false
+  }
+}
+
+const isMounted = ref(false)
+
+onMounted(() => {
+  isMounted.value = true
+
+  fetchCategories(true)
+})
 
 const filteredCategories = computed(() => {
   return categories.value.filter((c) =>
